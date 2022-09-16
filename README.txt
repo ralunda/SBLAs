@@ -1,8 +1,6 @@
-This is the SBLAs repository of yt simulations and absorption-line spectra 
-obtained with Trident. 
+This is the SBLAs repository of yt simulations and absorption-line spectra obtained with Trident. 
 
 QSO, galaxy and QSO+galaxy catalogs can be found in "Catalogs" folder. Scripts used to obtain the catalogs are in "Scripts" folder.
-
 
 All the simulation files obtained can be found using these links:
   -QSO+galaxy files: https://drive.google.com/drive/folders/18obAkqgLA0xPN9uZN7i3VkloXCw99OnU?usp=sharing
