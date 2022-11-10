@@ -62,6 +62,8 @@ def initialize_catalogue(catalogue_name, quasar=False, galaxy=False):
         catalogue_file.close()
         raise IOError("Unkown catalogue to initialize")
 
+    catalogue_file.write("\n")
+
     return catalogue_file
 
 
@@ -220,7 +222,6 @@ def run_quasar_snapshot(fn, z_min, z_max, z_step, base_name, catalogue_file, sta
             sg.save_spectrum(f"{base_name}{n}spec.h5")
             sg.save_spectrum(f"{base_name}{n}spec.txt")
             name = "QSO_" + str(n)
-            catalogue_file.write("\n")
             catalogue_file.write(name)
             catalogue_file.write(";")
             catalogue_file.write(snapshot_name)
@@ -322,7 +323,6 @@ def run_simple_ray(z, d, i, snapshot_name, galaxy_pos, base_name, catalogue_file
         b = 0
         c = 0
     name = base_name.spit("/")[-1] + str(n)
-    catalogue_file.write("\n")
     catalogue_file.write(name)
     catalogue_file.write(";")
     catalogue_file.write(snapshot_name)
