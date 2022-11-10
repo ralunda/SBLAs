@@ -7,7 +7,7 @@ import trident
 import math
 import h5py
 
-from utils import run_snapshot, initialize_catalogue
+from utils import run_galaxy_snapshot, initialize_catalogue
 
 # output configuration
 base_name = "/home/ralunda/anaconda3/simulaciones/ENZO/GCAT/G_"
@@ -22,8 +22,8 @@ z_step = 0.1
 # (Ignasi: I currently don't understand how they're set)
 
 def main():
-    """Run the different simulations"""
-    catalogue_file = initialize_catalogue(catalogue_name)
+    """Run the galaxy simulations"""
+    catalogue_file = initialize_catalogue(catalogue_name, galaxy=True)
 
     ################
     # run: sim 196 #
@@ -36,7 +36,7 @@ def main():
     dist_step = 2.0 # kpc
     # do the actual run
     try:
-        run_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max, dist_step, base_name, catalogue_file, starting_n=1)
+        run_galaxy_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max, dist_step, base_name, catalogue_file, starting_n=1)
     # in case of errors, stop the run and close the catalogue file
     except:
         catalogue.close()
@@ -53,7 +53,7 @@ def main():
     dist_step = 17.0 # kpc
     # do the actual run
     try:
-        run_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max, dist_step, base_name, catalogue_file, starting_n=401)
+        run_galaxy_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max, dist_step, base_name, catalogue_file, starting_n=401)
     # in case of errors, stop the run and close the catalogue file
     except:
         catalogue.close()
@@ -70,7 +70,7 @@ def main():
     dist_step = 30.0 # kpc
     # do the actual run
     try:
-        run_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max, dist_step, base_name, catalogue_file, starting_n=801)
+        run_galaxy_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max, dist_step, base_name, catalogue_file, starting_n=801)
     # in case of errors, stop the run and close the catalogue file
     except:
         catalogue.close()
@@ -87,7 +87,7 @@ def main():
     dist_step = 30.0 # kpc
     # do the actual run
     try:
-        run_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max, dist_step, base_name, catalogue_file, starting_n=1201)
+        run_galaxy_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max, dist_step, base_name, catalogue_file, starting_n=1201)
     # in case of errors, stop the run and close the catalogue file
     except:
         catalogue.close()

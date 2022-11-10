@@ -27,7 +27,7 @@ ds.derived_field_list
 line_list = 'all'
 
 
-def initialize_catalogue(catalogue_name):
+def initialize_catalogue(catalogue_name, quasar=False, galaxy=False):
     """Initialize the output catalogue.
     User is responsible for closing the file
 
@@ -40,9 +40,21 @@ def initialize_catalogue(catalogue_name):
     ------
     catalogue_file: _io.TextIOWrapper
     The open catalogue. User is responsible for closing the file.
+
+    Raise
+    -----
+    Exception if
     """
     catalogue_file = open(catalogue_name, "w")
-    catalogue.write(";".join(["Name", "Dataset", "z", "d", "Ang", "N [cm^-2]", "b [km/s]", "zfit"]))
+    if quasar and galaxy:
+        catalogue_file.write(write(";".join(["Name QSO", "Name Galaxy", "z QSO", "z Galaxy", "d", "Ang", "N [cm^-2]", "Absortion System"])))
+    elif quasar:
+        catalogue_file.write(";".join(["Name", "Dataset", "z", "seed"]))
+    elif galaxy:
+        catalogue_file.write(";".join(["Name", "Dataset", "z", "d", "Ang", "N [cm^-2]", "b [km/s]", "zfit"]))
+    else:
+        catalogue_file.close()
+        raise IOError("Unkown catalogue to initialize")
 
     return catalogue_file
 
@@ -75,7 +87,7 @@ def metallicity_e(field, data):
     """Compute metallicity"""
     return data["gas", "metal_density"] / data["gas", "density"]/Z_Solar
 
-def run_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max, dist_step, base_name, catalogue_file, starting_n=1):
+def run_galaxy_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max, dist_step, base_name, catalogue_file, starting_n=1):
     """Run a set of simple rays for the specified distances to the center of the galaxy
 
     Arguments
@@ -140,6 +152,77 @@ def run_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max, dist_
             for i in range(72, 0, -18):
                 run_simple_ray(z, d, 90, snapshot_name, galaxy_pos, f"{base_name}{n}", catalogue_file, neg_angles=True)
                 n += 1
+
+def run_quasar_snapshot(fn, z_min, z_max, z_step, base_name, catalogue_file, starting_n=1):
+    """Run a set of simple rays for the specified distances to the center of the galaxy
+
+    Arguments
+    ---------
+    fn: str
+    Name of the snapshot
+
+    galaxy_pos: array
+    3D position of the galaxy in the snapshot
+
+    n: int
+    Current simulation number
+
+    z: float
+    Redshift
+
+    dist_min: float
+    Minimum distance to the center of the galaxy
+
+    dist_max: float
+    Maximum distance to the center of the galaxy
+
+    dist_step: float
+    Step in the distance coverage (from dist_min to dist_max).
+
+    snapshot_name: str
+    Name of the snapshot used (e.g. "RD0196")
+
+    base_name: str
+    Base name used to name the outputs
+
+    catalogue_name: str
+    The name of the catalogue
+
+    starting_n: int
+    First simulation number
+    """
+    snapshot_name = fn.split("/")[0]
+    ds = load_snapshot(fn)
+
+    n = starting_n
+    for i in range(z_min, z_max, z_step):
+        for j in range (12061943, 12061953, 1):
+            ray = trident.make_compound_ray(
+                fn,
+                simulation_type='Enzo',
+                near_redshift=0,
+                far_redshift=(i),
+                max_box_fraction= 1.4,
+                lines='all', ftype='gas',
+                fields=['density', 'temperature', 'metallicity'],
+                solution_filename=f"{base_name}{n}ray.txt",
+                data_filename=f"{base_name}{n}ray.h5",
+                seed= (j))
+            sg = trident.SpectrumGenerator(lambda_min=3000, lambda_max=9000, dlambda=0.8)
+            sg.make_spectrum(ray, lines='all', 	output_absorbers_file=f"{base_name}{n}absorbers.txt", store_observables=True)
+            sg.add_qso_spectrum(emitting_redshift=(i))
+            sg.save_spectrum(f"{base_name}{n}spec.h5")
+            sg.save_spectrum(f"{base_name}{n}spec.txt")
+            name = "QSO_" + str(n)
+            catalogue_file.write("\n")
+            catalogue_file.write(name)
+            catalogue_file.write(";")
+            catalogue_file.write(snapshot_name)
+            catalogue_file.write(";")
+            catalogue_file.write(str(i))
+            catalogue_file.write(";")
+            catalogue_file.write(str(j))
+            catalogue_file.wirte("\n")
 
 def run_simple_ray(z, d, i, snapshot_name, galaxy_pos, base_name, catalogue_file, neg_angles=False, start_shift=None, end_shift=None):
     """Run simple rays for a specified distance to the center of the galaxy
@@ -232,7 +315,7 @@ def run_simple_ray(z, d, i, snapshot_name, galaxy_pos, base_name, catalogue_file
         a = 0
         b = 0
         c = 0
-    name = base_name.spit("/")[-1]
+    name = base_name.spit("/")[-1] + str(n)
     catalogue_file.write("\n")
     catalogue_file.write(name)
     catalogue_file.write(";")
@@ -245,7 +328,7 @@ def run_simple_ray(z, d, i, snapshot_name, galaxy_pos, base_name, catalogue_file
     if neg_angles:
         catalogue_file.write(str(180 - i))
     else:
-        qc.write(str(i))
+        catalogue_file.write(str(i))
     catalogue_file.write(";")
     catalogue_file.write(str(a))
     catalogue_file.write(";")
