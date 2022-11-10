@@ -1,11 +1,3 @@
-import yt
-from yt.units import kpc
-from yt.units import Mpc
-from yt import YTArray
-import numpy as np
-import trident
-from yt.mods import *
-
 from utils import run_quasar_snapshot, initialize_catalogue
 
 # output configuration

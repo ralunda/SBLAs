@@ -1,12 +1,3 @@
-
-import numpy as np
-import trident
-# Ignasi: not sure what we are importing here. Not sure if it's used either
-# I'm commenting it for the time being
-#from yt.mods import *
-import math
-import h5py
-
 from utils import run_galaxy_snapshot, initialize_catalogue
 
 # output configuration

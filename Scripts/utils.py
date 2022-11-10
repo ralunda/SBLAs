@@ -1,5 +1,11 @@
 import yt
-from trident.absorption_spectrum.absorption_spectrum_fit import generate_total_fit
+import trident
+from trident.absorption_spectrum.absorption_spectrum_fit import generate_total_fit¡
+# Ignasi: not sure what we are importing here. Not sure if it's used either
+# I'm commenting it for the time being
+#from yt.mods import *
+import math
+import h5py
 
 # some configuration variables used by run_simple_ray
 HI_parameters = {
