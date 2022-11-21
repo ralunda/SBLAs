@@ -150,13 +150,14 @@ def run_galaxy_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max
         for d in range (dist_min, dist_max, dist_step):
             run_simple_ray(z, d, 0, snapshot_name, galaxy_pos, f"{base_name}{n}", catalogue_file)
             n += 1
-            # Ignasi: positive angles?
+            # case: angles up to 90
             for i in range(18, 90, 18):
                 run_simple_ray(z, d, i, snapshot_name, galaxy_pos f"{base_name}{n}", catalogue_file)
                 n += 1
+            # special case: 90
             run_simple_ray(z, d, 90, snapshot_name, galaxy_pos, f"{base_name}{n}", catalogue_file)
             n += 1
-            # Ignasi: negative angles?
+            # case: angles from 90 to 180
             for i in range(72, 0, -18):
                 run_simple_ray(z, d, 90, snapshot_name, galaxy_pos, f"{base_name}{n}", catalogue_file, neg_angles=True)
                 n += 1
@@ -285,7 +286,7 @@ def run_simple_ray(z, d, i, snapshot_name, galaxy_pos, base_name, catalogue_file
     else:
         l = math.radians(i)
         # Ignasi: I think there is a mistake here, the 90-l should be math.pi-l
-        j = d * (math.sin(l) / math.sin(90-l))
+        j = d * (math.sin(l) / math.sin(math.pi/2.,-l))
         if neg_angles:
             start = galaxy_pos[:] - [d,-d,j]
             end = galaxy_pos[:] + [d,d,j]
