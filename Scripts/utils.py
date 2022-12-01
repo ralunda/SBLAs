@@ -142,23 +142,41 @@ def run_galaxy_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max
         base_name_alt = base_name.replace("/G_", "/G" + snapshot_name.replace("RD0", "")) + f"_{z:.1f}"
         if snapshot_name == "RD0180":
             #separamos x_end 1 kpc más línea S II 766 [765.684000 A] error en espectro MemoryError: Unable to allocate 6.10 GiB for an array
-            run_simple_ray(z, 0.4, 0, snapshot_name, galaxy_pos, base_name_alt, catalogue_file, start_shift=10, end_shift=[11, 10, 10])
+            start_shift=10, end_shift=[11, 10, 10]
+            run_simple_ray(start_shift, end_shift, z, snapshot_name, galaxy_pos, base_name_alt, catalogue_file)
         else:
-            run_simple_ray(z, 0, 0, snapshot_name, galaxy_pos, base_name_alt, catalogue_file, start_shift=10, end_shift=[10, 10, 10])
+            start_shift=10, end_shift=[10, 10, 10]
+            run_simple_ray(start_shift, end_shift, z, snapshot_name, galaxy_pos, base_name_alt, catalogue_file)
 
         # loop over distances
         for d in range (dist_min, dist_max, dist_step):
-            run_simple_ray(z, d, 0, snapshot_name, galaxy_pos, f"{base_name}{n}", catalogue_file)
+            l = math.radians(0.0)
+            j = d * (math.sin(l) / math.sin(math.pi/2.,-l))
+            start_shift = [d,d,-j]
+            end_shift = [d,-d,-j]
+            run_simple_ray(start_shift, end_shift, z, snapshot_name, galaxy_pos, f"{base_name}{n}", catalogue_file)
             n += 1
             # case: angles up to 90
             for i in range(18, 90, 18):
-                run_simple_ray(z, d, i, snapshot_name, galaxy_pos, f"{base_name}{n}", catalogue_file)
+                l = math.radians(i)
+                j = d * (math.sin(l) / math.sin(math.pi/2.,-l))
+                start_shift = [d,d,-j]
+                end_shift = [d,-d,-j]
+                run_simple_ray(start_shift, end_shift, z, snapshot_name, galaxy_pos, f"{base_name}{n}", catalogue_file)
                 n += 1
             # special case: 90
-            run_simple_ray(z, d, 90, snapshot_name, galaxy_pos, f"{base_name}{n}", catalogue_file)
+            l = math.radians(90.)
+            j = d * (math.sin(l) / math.sin(math.pi/2.,-l))
+            start_shift = [d,d,-j]
+            end_shift = [d,-d,-j]
+            run_simple_ray(start_shift, end_shift, z, snapshot_name, galaxy_pos, f"{base_name}{n}", catalogue_file)
             n += 1
             # case: angles from 90 to 180
             for i in range(72, 0, -18):
+                l = math.radians(i)
+                j = d * (math.sin(l) / math.sin(math.pi/2.,-l))
+                start_shift = [d,-d,j]
+                end_shift = [d,d,j]
                 run_simple_ray(z, d, 90, snapshot_name, galaxy_pos, f"{base_name}{n}", catalogue_file, neg_angles=True)
                 n += 1
 
@@ -232,19 +250,23 @@ def run_quasar_snapshot(fn, z_min, z_max, z_step, base_name, catalogue_file, sta
             catalogue_file.write(str(j))
             catalogue_file.wirte("\n")
 
-def run_simple_ray(z, d, i, snapshot_name, galaxy_pos, base_name, catalogue_file, neg_angles=False, start_shift=None, end_shift=None):
+def run_simple_ray(start_shift, end_shift, snapshot_name, galaxy_pos, base_name, catalogue_file):
     """Run simple rays for a specified distance to the center of the galaxy
 
     Arguments
     ---------
+    start_shift: float, array
+    Shift of the starting point of the ray with respect to the galaxy centre
+    If a float, all 3 dimensions are equally shifted.
+    If an array, it must have size=3 and each dimension will be shifted independently
+
+    end_shift: float, array
+    Shift of the ending point of the ray with respect to the galaxy centre.
+    If a float, all 3 dimensions are equally shifted.
+    If an array, it must have size=3 and each dimension will be shifted independently.
+
     z: float
     Redshift
-
-    d: float
-    Distance to the center of the galaxy
-
-    i: float
-    Incidence angle (in degrees)
 
     snapshot_name: str
     Name of the snapshot used (e.g. "RD0196")
@@ -257,42 +279,10 @@ def run_simple_ray(z, d, i, snapshot_name, galaxy_pos, base_name, catalogue_file
 
     catalogue_name: str
     The name of the catalogue
-
-    neg_angles: bool - Default: False
-    Ignasi: Not sure how to call this, but when True what it does is to swap
-    start = galaxy_pos[:] - [d,d,-j]
-    end = galaxy_pos[:] + [d,-d,-j]
-    by
-    start = galaxy_pos[:] - [d,-d,j]
-    end = galaxy_pos[:] + [d,d,j]
-    and save 180-i instead of i
-
-    start_shift: float, array or None - Default: None
-    If not None, manually set the start_shift. If a float, all 3 dimensions
-    are shifted similarly. If an array, it must have size=3 and each dimension
-    will be shifted independently
-
-    end_shift: float, array or None - Default: None
-    If not None, manually set the end_shift. If a float, all 3 dimensions
-    are shifted similarly. If an array, it must have size=3 and each dimension
-    will be shifted independently.
     """
-    # Ignasi: I think we are computing the ray trajectory here
-    if start_shift is not None and end_shift is not None:
-        start = galaxy_pos[:] - start_shift
-        end = galaxy_pos[:] + end_shift
-    elif start_shift is None and end_shift is None:
-        raise Exception("Both or none of 'start_shift' and 'end_shift' must be specified")
-    else:
-        l = math.radians(i)
-        # Ignasi: I think there is a mistake here, the 90-l should be math.pi-l
-        j = d * (math.sin(l) / math.sin(math.pi/2.,-l))
-        if neg_angles:
-            start = galaxy_pos[:] - [d,-d,j]
-            end = galaxy_pos[:] + [d,d,j]
-        else:
-            start = galaxy_pos[:] - [d,d,-j]
-            end = galaxy_pos[:] + [d,-d,-j]
+    start = galaxy_pos[:] - start_shift
+    end = galaxy_pos[:] + end_shift
+
     ray = trident.make_simple_ray(
         ds,
         start_position=ray_start,
