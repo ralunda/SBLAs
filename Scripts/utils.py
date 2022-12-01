@@ -23,13 +23,6 @@ HI_parameters = {
     'init_b':30,
     'init_N':1E14,
 }
-u = ds.units
-datastart = start*u.kpc
-ray_start=datastart.to('code_length')
-v = ds.units
-dataend = end*v.kpc
-ray_end=dataend.to('code_length')
-ds.derived_field_list
 line_list = 'all'
 
 
@@ -81,6 +74,13 @@ def load_snapshot(fn):
     The loaded snapshot
     """
     ds = yt.load(fn)
+    u = ds.units
+    datastart = start*u.kpc
+    ray_start=datastart.to('code_length')
+    v = ds.units
+    dataend = end*v.kpc
+    ray_end=dataend.to('code_length')
+
     ds.add_field(
         ("gas", "metallicity"),
         function=metallicity_e,
