@@ -278,7 +278,7 @@ def run_simple_ray(z, d, i, snapshot_name, galaxy_pos, base_name, catalogue_file
     will be shifted independently.
     """
     # Ignasi: I think we are computing the ray trajectory here
-    if start_shift is None and end_shift is None:
+    if start_shift is not None and end_shift is not None:
         start = galaxy_pos[:] - start_shift
         end = galaxy_pos[:] + end_shift
     elif start_shift is None and end_shift is None:
