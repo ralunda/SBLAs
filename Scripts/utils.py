@@ -1,6 +1,6 @@
 import yt
 import trident
-from trident.absorption_spectrum.absorption_spectrum_fit import generate_total_fit¡
+from trident.absorption_spectrum.absorption_spectrum_fit import generate_total_fit
 # Ignasi: not sure what we are importing here. Not sure if it's used either
 # I'm commenting it for the time being
 #from yt.mods import *
@@ -139,7 +139,7 @@ def run_galaxy_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max
     n = starting_n
     for z in range (z_min, z_max, z_step):
         #rayo centro
-        base_name_alt = base_name.replace("/G_", "/G" + snapshot_name.replace("RD0", "")) + f"_{z:.1f}")
+        base_name_alt = base_name.replace("/G_", "/G" + snapshot_name.replace("RD0", "")) + f"_{z:.1f}"
         if snapshot_name == "RD0180":
             #separamos x_end 1 kpc más línea S II 766 [765.684000 A] error en espectro MemoryError: Unable to allocate 6.10 GiB for an array
             run_simple_ray(z, 0.4, 0, snapshot_name, galaxy_pos, base_name_alt, catalogue_file, start_shift=10, end_shift=[11, 10, 10])
@@ -152,7 +152,7 @@ def run_galaxy_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max
             n += 1
             # case: angles up to 90
             for i in range(18, 90, 18):
-                run_simple_ray(z, d, i, snapshot_name, galaxy_pos f"{base_name}{n}", catalogue_file)
+                run_simple_ray(z, d, i, snapshot_name, galaxy_pos, f"{base_name}{n}", catalogue_file)
                 n += 1
             # special case: 90
             run_simple_ray(z, d, 90, snapshot_name, galaxy_pos, f"{base_name}{n}", catalogue_file)
