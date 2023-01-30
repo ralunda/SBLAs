@@ -215,8 +215,10 @@ def main(args):
     end_shifts = np.vstack([x_end, y_end, z_end]).transpose()
 
     # generate redshift distributions
-    # TODO: replace with the actual distribution we want
-    z = np.random.uniform(2.2, 2.6, size=args.n_points)
+    ndz = np.genfromtxt(args.z_dist, names=True, encoding="UTF-8")
+    z_from_prob = interp1d(ndz["ndz_pdf"], ndz["z"])
+    probs = np.random.uniform(0.0, 1.0, size=args.n_points)
+    z = z_from_prob(probs)
 
     # choose snapshots
     snapshots = np.genfromtxt(args.snapshots, names=True, dtype=None, encoding="UTF-8")
@@ -292,6 +294,11 @@ if __name__ == "__main__":
                         default=0,
                         help="""Number of processors to use. If 0 use
                             multiprocessing.cpu_count() // 2)""")
+    parser.add_argument("--z-dist",
+                        type=str,
+                        default="../Data/dr16_dla_ndz.txt",
+                        help="""File with the redshift distribution of objects.
+                            Must have fields z and ndz_pdf""")
     parser.add_argument("--seed",
                         type=int,
                         default=458467463,
