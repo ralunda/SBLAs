@@ -6,6 +6,7 @@ import argparse
 from itertools import repeat
 import multiprocessing
 import numpy as np
+from scipy.interpolate import interp1d
 
 from utils import (
     initialize_catalogue,
