@@ -25,6 +25,7 @@ HI_parameters = {
 }
 line_list = 'all'
 
+Z_Solar = 0.02041
 
 def initialize_catalogue(catalogue_name, quasar=False, galaxy=False):
     """Initialize the output catalogue.
@@ -151,7 +152,7 @@ def run_galaxy_snapshot(fn,
     ds = load_snapshot(fn)
 
     n = starting_n
-    for z in range (z_min, z_max, z_step):
+    for z in np.arange(z_min, z_max, z_step):
         #rayo centro
         base_name_alt = base_name.replace(
             "/G_", "/G" + snapshot_name.replace("RD0", "")) + f"_{z:.1f}"
