@@ -68,7 +68,7 @@ def initialize_catalogue(catalogue_name, quasar=False, galaxy=False):
     return catalogue_file
 
 
-def load_snapshot(fn):
+def load_snapshot(fn, dir=""):
     """Load the simulation snapshot
 
     Arguments
@@ -76,12 +76,15 @@ def load_snapshot(fn):
     fn: str
     Name of the snapshot
 
+    dir: str
+    Directory where snapshots are kept
+
     Return
     ------
     ds: ?
     The loaded snapshot
     """
-    ds = yt.load(fn)
+    ds = yt.load(dir+fn)
     ds.add_field(
         ("gas", "metallicity"),
         function=metallicity_e,

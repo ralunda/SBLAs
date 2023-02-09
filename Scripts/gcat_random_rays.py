@@ -244,7 +244,7 @@ def main(args):
             if args.test:
                 ds = None
             else:
-                ds = load_snapshot(snapshot)
+                ds = load_snapshot(snapshot, args.snapshots_dir)
             pos = np.where(snapshot_names == snapshot)
             context = multiprocessing.get_context('fork')
             with context.Pool(processes=args.num_processors) as pool:
@@ -282,6 +282,10 @@ if __name__ == "__main__":
                         type=str,
                         default="/home/ralunda/anaconda3/simulaciones/ENZO/GCAT/G_catalog.csv",
                         help="Output catalogue filename. Extension should be csv")
+    parser.add_argument("--snapshots-dir",
+                        type=str,
+                        default="",
+                        help="Directory where the snapshots are placed")
     parser.add_argument("--rho-max",
                         type=float,
                         default=300,
