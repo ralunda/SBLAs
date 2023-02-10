@@ -3,6 +3,7 @@ This file contains a script to run the galaxy simulations using a
 uniformly distributed random rays through the 3D volume of the galaxy.
 """
 import argparse
+import os
 from itertools import repeat
 import multiprocessing
 import numpy as np
@@ -14,6 +15,8 @@ from utils import (
     run_galaxy_snapshot,
     run_simple_ray
 )
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def compute_rays(ds,
                  z,
@@ -205,6 +208,11 @@ def main(args):
 
     np.random.seed(args.seed)
 
+    # load snapshots info
+    snapshots = np.genfromtxt(args.snapshots, names=True, dtype=None, encoding="UTF-8")
+    if args.rho_max < 0:
+        args.rho_max = np.max(snapshots["rho_max"])
+
     # generate random list of starting and ending points for the rays
     rho = args.rho_max * np.random.uniform(0, 1, size=args.n_points)**(1/3)
     theta_e = np.random.uniform(0, 2*np.pi, size=args.n_points)
@@ -222,7 +230,6 @@ def main(args):
     z = z_from_prob(probs)
 
     # choose snapshots
-    snapshots = np.genfromtxt(args.snapshots, names=True, dtype=None, encoding="UTF-8")
     choices = [select_snapshot(z_aux, rho_aux, snapshots) for z_aux, rho_aux in zip(z, rho)]
     snapshot_names = snapshots["name"][choices]
     galaxy_positions = np.vstack([snapshots["galaxy_pos_x"][choices],
@@ -276,20 +283,12 @@ if __name__ == "__main__":
 
     parser.add_argument("--base-name",
                         type=str,
-                        default="/home/ralunda/anaconda3/simulaciones/ENZO/GCAT/G_",
+                        default=f"{THIS_DIR}/simulations/GCAT/G_",
                         help="Output catalogue filename. Extension should be csv")
     parser.add_argument("--catalogue-file",
                         type=str,
-                        default="/home/ralunda/anaconda3/simulaciones/ENZO/GCAT/G_catalog.csv",
+                        default=f"{THIS_DIR}/simulations/GCAT/G_catalog.csv",
                         help="Output catalogue filename. Extension should be csv")
-    parser.add_argument("--snapshots-dir",
-                        type=str,
-                        default="",
-                        help="Directory where the snapshots are placed")
-    parser.add_argument("--rho-max",
-                        type=float,
-                        default=300,
-                        help="Maximum distance to probe (in kpc)")
     parser.add_argument("--n-points",
                         type=int,
                         default=10,
@@ -299,22 +298,32 @@ if __name__ == "__main__":
                         default=0,
                         help="""Number of processors to use. If 0 use
                             multiprocessing.cpu_count() // 2)""")
-    parser.add_argument("--z-dist",
+    parser.add_argument("--rho-max",
+                        type=float,
+                        default=-1.0,
+                        help="""Maximum distance to probe (in kpc). If negative,
+                            infer from --snapshots""")
+    parser.add_argument("--snapshots",
                         type=str,
-                        default="../Data/dr16_dla_ndz.txt",
-                        help="""File with the redshift distribution of objects.
-                            Must have fields z and ndz_pdf""")
+                        default=f"{THIS_DIR}/../Data/snapshots.txt",
+                        help='File containing the snapshot information')
+    parser.add_argument("--snapshots-dir",
+                        type=str,
+                        default="",
+                        help="Directory where the snapshots are placed")
     parser.add_argument("--seed",
                         type=int,
                         default=458467463,
                         help='Seed for the random number generator')
-    parser.add_argument("--snapshots",
-                        type=str,
-                        default="../Data/snapshots.txt",
-                        help='File containing the snapshot information')
     parser.add_argument("--test",
                         action="store_true",
                         help='Use the test function instead of run_simple_ray')
+    # TODO: fix this so that the value passed here is actually used
+    parser.add_argument("--z-dist",
+                        type=str,
+                        default=f"{THIS_DIR}/../Data/dr16_dla_ndz.txt",
+                        help="""File with the redshift distribution of objects.
+                            Must have fields z and ndz_pdf. Currently this is ignored""")
     parser.add_argument("--z-sun",
                         type=float,
                         default=0.02041,
