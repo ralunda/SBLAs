@@ -6,6 +6,7 @@ from trident.absorption_spectrum.absorption_spectrum_fit import generate_total_f
 #from yt.mods import *
 import math
 import h5py
+import numpy as np
 
 # some configuration variables used by run_simple_ray
 HI_parameters = {
@@ -159,7 +160,7 @@ def run_galaxy_snapshot(fn,
         if snapshot_name == "RD0180":
             # for S II 766 line (765.684000 Angs) as otherwise we get
             # MemoryError: Unable to allocate 6.10 GiB for an array
-            start_shift=10
+            start_shift=[10, 10, 10]
             end_shift=[11, 10, 10]
             catalogue_file.write(run_simple_ray(
                 ds,
@@ -171,7 +172,7 @@ def run_galaxy_snapshot(fn,
                 galaxy_pos,
                 base_name_alt))
         else:
-            start_shift=10
+            start_shift=[10, 10, 10]
             end_shift=[10, 10, 10]
             catalogue_file.write(run_simple_ray(
                 ds,
@@ -184,7 +185,7 @@ def run_galaxy_snapshot(fn,
                 base_name_alt))
 
         # loop over distances
-        for dist in range (dist_min, dist_max, dist_step):
+        for dist in np.arange(dist_min, dist_max, dist_step):
             l = math.radians(0.0)
             j = dist * (math.sin(l) / math.sin(math.pi/2.,-l))
             start_shift = [dist, dist, -j]
@@ -295,7 +296,7 @@ def run_quasar_snapshot(fn,
     ds = load_snapshot(fn)
 
     n = starting_n
-    for z in range(z_min, z_max, z_step):
+    for z in np.arange(z_min, z_max, z_step):
         for j in range (12061943, 12061953, 1):
             ray = trident.make_compound_ray(
                 fn,

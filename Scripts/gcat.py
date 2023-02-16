@@ -1,3 +1,4 @@
+import numpy as np
 from utils import run_galaxy_snapshot, initialize_catalogue
 
 # output configuration
@@ -30,7 +31,7 @@ def main():
         run_galaxy_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max, dist_step, base_name, catalogue_file, starting_n=1)
     # in case of errors, stop the run and close the catalogue file
     except:
-        catalogue.close()
+        catalogue_file.close()
         return
 
     ################
@@ -47,7 +48,7 @@ def main():
         run_galaxy_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max, dist_step, base_name, catalogue_file, starting_n=401)
     # in case of errors, stop the run and close the catalogue file
     except:
-        catalogue.close()
+        catalogue_file.close()
         return
 
     ################
@@ -64,7 +65,7 @@ def main():
         run_galaxy_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max, dist_step, base_name, catalogue_file, starting_n=801)
     # in case of errors, stop the run and close the catalogue file
     except:
-        catalogue.close()
+        catalogue_file.close()
         return
 
     ################
@@ -81,7 +82,7 @@ def main():
         run_galaxy_snapshot(fn, galaxy_pos, z_min, z_max, z_step, dist_min, dist_max, dist_step, base_name, catalogue_file, starting_n=1201)
     # in case of errors, stop the run and close the catalogue file
     except:
-        catalogue.close()
+        catalogue_file.close()
         return
 
     # end of the run: close the catalogue file
