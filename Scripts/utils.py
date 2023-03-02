@@ -122,38 +122,14 @@ def run_galaxy_snapshot(fn,
     galaxy_pos: array
     3D position of the galaxy in the snapshot
 
-    n: int
-    Current simulation number
+    z_min: float
+    Minimu redshift
 
-    z: float
-    Redshift
+    z_max: float
+    Maximum redshift
 
-    dist_min: float
-    Minimum distance to the center of the galaxy
-
-    dist_max: float
-    Maximum distance to the center of the galaxy
-
-    dist_step: float
-    Step in the distance coverage (from dist_min to dist_max).
-
-    snapshot_name: str
-    Name of the snapshot used (e.g. "RD0196")
-
-    base_name: str
-    Base name used to name the outputs
-
-    catalogue_name: str
-    The name of the catalogue
-
-    galaxy_pos: array
-    3D position of the galaxy in the snapshot
-
-    n: int
-    Current simulation number
-
-    z: float
-    Redshift
+    z_step: float
+    Redshift step
 
     dist_min: float
     Minimum distance to the center of the galaxy
@@ -164,17 +140,11 @@ def run_galaxy_snapshot(fn,
     dist_step: float
     Step in the distance coverage (from dist_min to dist_max).
 
-    snapshot_name: str
-    Name of the snapshot used (e.g. "RD0196")
-
     base_name: str
     Base name used to name the outputs
 
     catalogue_name: str
     The name of the catalogue
-
-    starting_n: int
-    First simulation number
     """
     snapshot_name = fn.split("/")[0]
     ds = load_snapshot(fn)
@@ -212,7 +182,7 @@ def run_galaxy_snapshot(fn,
                 base_name_alt))
 
         # loop over distances
-        for dist in np.arange (dist_min, dist_max, dist_step):
+        for dist in np.arange(dist_min, dist_max, dist_step):
             l = math.radians(0.0)
             j = dist * (math.sin(l) / math.sin(math.pi/2.-l))
             start_shift = [-dist, -dist, -j]
@@ -403,6 +373,7 @@ def run_simple_ray(ds,
     ray_start=datastart.to('code_length')
     dataend = end*ds.units.kpc
     ray_end=dataend.to('code_length')
+
     ray = trident.make_simple_ray(
         ds,
         start_position=ray_start,
