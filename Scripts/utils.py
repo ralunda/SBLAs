@@ -9,24 +9,96 @@ import h5py
 import numpy as np
 
 # some configuration variables used by run_simple_ray
-HI_parameters = {
-    'name':'HI',
-    'f': [.4164],
-    'Gamma':[6.265E8],
-    'wavelength':[1215.67],
-    'numLines':1,
-    'maxN': 1E22,
-    'minN':1E11,
-    'maxb': 300,
-    'minb':1,
-    'maxz': 6,
-    'minz':0,
-    'init_b':30,
-    'init_N':1E14,
-}
-line_list = 'all'
-
 Z_Solar = 0.02041
+
+speciesDicts = {
+    'HI': {
+        'name':'HI',
+        'f': [.4164],
+        'Gamma':[6.265E8],
+        'wavelength':[1215.67],
+        'numLines':1,
+        'maxN': 1E22,
+        'minN':1E11,
+        'maxb': 300,
+        'minb':1,
+        'maxz': 6,
+        'minz':0,
+        'init_b':30,
+        'init_N':1E14,
+    },
+    #TODO: @roberto add parameters for other lines
+}
+orderFits = ['HI']
+
+
+def fit_lines(base_name, input_extension=".h5", save_fit=False):
+    """Fit line profiles in the spectrum
+
+    Arguments
+    ---------
+    base_name: str
+    Base name used to name the outputs
+
+    input_extension: str
+    Extension of the file containing the spectra. Valid extensions are
+    ".h5" or ".txt"
+
+    save_fit:
+    Save the fit results in an h5 file called "{base_name}HIspecFIT.h5"
+
+    Return
+    ------
+    nhi: float
+    The column density of the line
+
+    b_kms: float
+    The impact parameter of the line, in km/s
+
+    zfit: float
+    The fitted redshift
+    """
+    # load arrays
+    if input_extension == ".h5":
+        file = h5py.File(f"{base_name}spec.h5")
+        flux = file['flux'][:]
+        wavelength = file["wavelength"][:]
+        file.close()
+    elif input_extension in [".fits", ".fits.gz"]:
+        # TODO: read data from fits file
+        return 0, 0, 0
+    elif input_extension == ".txt":
+        # TODO: read data from txt file
+        return 0, 0, 0
+    else:
+        raise Exception("Loading from other than .h5 not implemented")
+
+    # do actual fit
+    if save_fit:
+        output_file = f"{base_name}specFIT.h5"
+    else:
+        output_file = None
+
+    fitted_lines, fitted_flux = generate_total_fit(
+        wavelength,
+        flux,
+        orderFits,
+        speciesDicts,
+        maxLength=9000,
+        output_file=output_file)
+
+    # parse results
+    if fitted_lines['HI']['N'].size > 0:
+        nhi = fitted_lines['HI']['N'][0]
+        b_kms = fitted_lines['HI']['b'][0]
+        zfit = fitted_lines['HI']['z'][0]
+    else:
+        nhi = 0.
+        b_kms = 0.
+        zfit = 0.
+
+    return nhi, b_kms, zfit
+
 
 def initialize_catalogue(catalogue_name, quasar=False, galaxy=False):
     """Initialize the output catalogue.
@@ -327,7 +399,8 @@ def run_simple_ray(ds,
                    end_shift,
                    snapshot_name,
                    galaxy_pos,
-                   base_name):
+                   base_name,
+                   noise=None):
     """Run a simple ray from a specified start and end shifts from the centre
     of a galaxy
 
@@ -361,6 +434,9 @@ def run_simple_ray(ds,
     base_name: str
     Base name used to name the outputs
 
+    noise: float
+    The noise to be applied to the spectrum. Ignored.
+
     Return
     ------
     entry: str
@@ -379,7 +455,7 @@ def run_simple_ray(ds,
         start_position=ray_start,
         end_position=ray_end,
         redshift= (z),
-        lines=line_list,
+        lines='all',
         fields=['density', 'temperature', 'metallicity'],
         data_filename=f"{base_name}ray.h5")
     spec_gen = trident.SpectrumGenerator(
@@ -399,27 +475,8 @@ def run_simple_ray(ds,
         store_observables=True)
     spec_gen.save_spectrum(f"{base_name}HIspec.h5")
     spec_gen.save_spectrum(f"{base_name}HIspec.txt")
-    file = h5py.File(f"{base_name}HIspec.h5")
-    flux = file['flux'][:]
-    wavelength = file["wavelength"][:]
-    file.close()
-    speciesDicts = {'HI':HI_parameters}
-    orderFits = ['HI']
-    fitted_lines, fitted_flux = generate_total_fit(
-        wavelength,
-        flux,
-        orderFits,
-        speciesDicts,
-        maxLength=9000,
-        output_file=f"{base_name}HIspecFIT.h5")
-    if fitted_lines['HI']['N'].size > 0:
-        nhi = fitted_lines['HI']['N'][0]
-        b_kms = fitted_lines['HI']['b'][0]
-        zfit = fitted_lines['HI']['z'][0]
-    else:
-        nhi = 0
-        b_kms = 0
-        zfit = 0
+    nhi, b_kms, zfit = fit_lines(f"{base_name}HI")
+
     name = base_name.split("/")[-1]
     return (
         f"{name}; {snapshot_name}; {z}; {dist}; "
@@ -427,3 +484,77 @@ def run_simple_ray(ds,
         f"{end_shift[0]}; {end_shift[1]}; {end_shift[2]}; "
         f"{nhi}; {b_kms}; {zfit}\n"
     )
+
+def run_simple_ray_fast(ds,
+                        z,
+                        dist,
+                        start_shift,
+                        end_shift,
+                        snapshot_name,
+                        galaxy_pos,
+                        base_name,
+                        noise):
+    """Run a simple ray from a specified start and end shifts from the centre
+    of a galaxy
+
+    Arguments
+    ---------
+    ds: ?
+    The loaded snapshot
+
+    z: float
+    The redshift of the ray
+
+    dist: float
+    Distance to the centre of the galaxy
+
+    start_shift: float, array
+    Shift of the starting point of the ray with respect to the galaxy centre
+    If a float, all 3 dimensions are equally shifted.
+    If an array, it must have size=3 and each dimension will be shifted independently
+
+    end_shift: float, array
+    Shift of the ending point of the ray with respect to the galaxy centre.
+    If a float, all 3 dimensions are equally shifted.
+    If an array, it must have size=3 and each dimension will be shifted independently.
+
+    snapshot_name: str
+    Name of the snapshot used (e.g. "RD0196")
+
+    galaxy: array
+    3D position of the galaxy in the snapshot
+
+    base_name: str
+    Base name used to name the outputs
+
+    noise: float
+    The noise to be applied to the spectrum
+    """
+    start = galaxy_pos[:] + start_shift
+    end = galaxy_pos[:] + end_shift
+
+    datastart = start*ds.units.kpc
+    ray_start=datastart.to('code_length')
+    dataend = end*ds.units.kpc
+    ray_end=dataend.to('code_length')
+
+    ray = trident.make_simple_ray(
+        ds,
+        start_position=ray_start,
+        end_position=ray_end,
+        redshift=z,
+        lines='all',
+        fields=['density', 'temperature', 'metallicity'],
+        )
+    spec_gen = trident.SpectrumGenerator(
+        lambda_min= 3000,
+        lambda_max= 9000,
+        dlambda=0.8)
+    spec_gen.make_spectrum(
+        ray,
+        lines='all',
+        store_observables=True)
+    spec_gen.save_spectrum(f"{base_name}spec_nonoise.fits.gz", format="FITS")
+    if noise > 0.0:
+        spec_gen.add_gaussian_noise(noise)
+        spec_gen.save_spectrum(f"{base_name}spec.fits.gz", format="FITS")
