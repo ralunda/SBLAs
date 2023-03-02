@@ -3,10 +3,10 @@ import trident
 from trident.absorption_spectrum.absorption_spectrum_fit import generate_total_fit
 # Ignasi: not sure what we are importing here. Not sure if it's used either
 # I'm commenting it for the time being
-# from yt.mods import * 
-import math 
+#from yt.mods import *
+import math
 import h5py
-import numpy as np ## ADDED BY ROBERTO
+import numpy as np
 
 # some configuration variables used by run_simple_ray
 HI_parameters = {
@@ -31,14 +31,17 @@ Z_Solar = 0.02041
 def initialize_catalogue(catalogue_name, quasar=False, galaxy=False):
     """Initialize the output catalogue.
     User is responsible for closing the file
+
     Arguments
     ---------
     catalogue_name: str
     The name of the catalogue
+
     Return
     ------
     catalogue_file: _io.TextIOWrapper
     The open catalogue. User is responsible for closing the file.
+
     Raise
     -----
     Exception if
@@ -69,12 +72,15 @@ def initialize_catalogue(catalogue_name, quasar=False, galaxy=False):
 
 def load_snapshot(fn, dir=""):
     """Load the simulation snapshot
+
     Arguments
     ---------
     fn: str
     Name of the snapshot
+
     dir: str
     Directory where snapshots are kept
+
     Return
     ------
     ds: ?
@@ -107,28 +113,66 @@ def run_galaxy_snapshot(fn,
                         catalogue_file,
                         starting_n=1):
     """Run a set of simple rays for the specified distances to the center of the galaxy
+
     Arguments
     ---------
     fn: str
     Name of the snapshot
+
     galaxy_pos: array
     3D position of the galaxy in the snapshot
+
     n: int
     Current simulation number
+
     z: float
     Redshift
+
     dist_min: float
     Minimum distance to the center of the galaxy
+
     dist_max: float
     Maximum distance to the center of the galaxy
+
     dist_step: float
     Step in the distance coverage (from dist_min to dist_max).
+
     snapshot_name: str
     Name of the snapshot used (e.g. "RD0196")
+
     base_name: str
     Base name used to name the outputs
+
     catalogue_name: str
     The name of the catalogue
+
+    galaxy_pos: array
+    3D position of the galaxy in the snapshot
+
+    n: int
+    Current simulation number
+
+    z: float
+    Redshift
+
+    dist_min: float
+    Minimum distance to the center of the galaxy
+
+    dist_max: float
+    Maximum distance to the center of the galaxy
+
+    dist_step: float
+    Step in the distance coverage (from dist_min to dist_max).
+
+    snapshot_name: str
+    Name of the snapshot used (e.g. "RD0196")
+
+    base_name: str
+    Base name used to name the outputs
+
+    catalogue_name: str
+    The name of the catalogue
+
     starting_n: int
     First simulation number
     """
@@ -136,14 +180,14 @@ def run_galaxy_snapshot(fn,
     ds = load_snapshot(fn)
 
     n = starting_n
-    for z in np.arange(z_min, z_max, z_step): ## REVIEWED BY ROBERTO
+    for z in np.arange(z_min, z_max, z_step):
         #rayo centro
         base_name_alt = base_name.replace(
             "/G_", "/G" + snapshot_name.replace("RD0", "")) + f"_{z:.1f}"
         if snapshot_name == "RD0180":
             # for S II 766 line (765.684000 Angs) as otherwise we get
             # MemoryError: Unable to allocate 6.10 GiB for an array
-            start_shift=[-10, -10, -10] ## REVIEWED BY ROBERTO
+            start_shift=[-10, -10, -10]
             end_shift=[11, 10, 10]
             catalogue_file.write(run_simple_ray(
                 ds,
@@ -155,7 +199,7 @@ def run_galaxy_snapshot(fn,
                 galaxy_pos,
                 base_name_alt))
         else:
-            start_shift=[-10, -10, -10] ## REVIEWED BY ROBERTO
+            start_shift=[-10, -10, -10]
             end_shift=[10, 10, 10]
             catalogue_file.write(run_simple_ray(
                 ds,
@@ -168,10 +212,10 @@ def run_galaxy_snapshot(fn,
                 base_name_alt))
 
         # loop over distances
-        for dist in np.arange (dist_min, dist_max, dist_step): ## REVIEWED BY ROBERTO 
+        for dist in np.arange (dist_min, dist_max, dist_step):
             l = math.radians(0.0)
-            j = dist * (math.sin(l) / math.sin(math.pi/2.-l)) ## REVIEWED BY ROBERTO
-            start_shift = [-dist, -dist, -j] ## REVIEWED BY ROBERTO
+            j = dist * (math.sin(l) / math.sin(math.pi/2.-l))
+            start_shift = [-dist, -dist, -j]
             end_shift = [dist, -dist, -j]
             catalogue_file.write(run_simple_ray(
                 ds,
@@ -186,8 +230,8 @@ def run_galaxy_snapshot(fn,
             # case: angles up to 90
             for i in range(18, 90, 18):
                 l = math.radians(i)
-                j = dist * (math.sin(l) / math.sin(math.pi/2.-l)) ## REVIEWED BY ROBERTO
-                start_shift = [-dist, -dist, -j] ## REVIEWED BY ROBERTO
+                j = dist * (math.sin(l) / math.sin(math.pi/2.-l))
+                start_shift = [-dist, -dist, -j]
                 end_shift = [dist, -dist, -j]
                 catalogue_file.write(run_simple_ray(
                     ds,
@@ -200,10 +244,8 @@ def run_galaxy_snapshot(fn,
                     f"{base_name}{n}"))
                 n += 1
             # special case: 90
-            # l = math.radians(90.)  ##REVIEWED BY ROBERTO LINE DELETED
-            # j = dist * (math.sin(l) / math.sin(math.pi/2.-l)) ##REVIEWED BY ROBERTO DELETED , AND LINE DELETED DUE TO DIVISION BY 0
-            start_shift = [0, -dist, dist]  ## REVIEWED BY ROBERTO CHANGED COODDINATES
-            end_shift = [0, -dist, -dist]  ## REVIEWED BY ROBERTO CHANGED COODDINATES
+            start_shift = [0, -dist, dist]
+            end_shift = [0, -dist, -dist]
             catalogue_file.write(run_simple_ray(
                 ds,
                 z,
@@ -217,9 +259,9 @@ def run_galaxy_snapshot(fn,
             # case: angles from 90 to 180
             for i in range(72, 0, -18):
                 l = math.radians(i)
-                j = dist * (math.sin(l) / math.sin(math.pi/2.-l)) ## REVIEWED BY ROBERTO
+                j = dist * (math.sin(l) / math.sin(math.pi/2.-l))
                 start_shift = [dist, -dist, j]
-                end_shift = [-dist, -dist, -j] ## REVIEWED BY ROBERTO NEGATIVE SIGN
+                end_shift = [-dist, -dist, -j]
                 catalogue_file.write(run_simple_ray(
                     ds,
                     z,
@@ -239,28 +281,39 @@ def run_quasar_snapshot(fn,
                         catalogue_file,
                         starting_n=1):
     """Run a set of simple rays for the specified distances to the center of the galaxy
+
     Arguments
     ---------
     fn: str
     Name of the snapshot
+
     galaxy_pos: array
     3D position of the galaxy in the snapshot
+
     n: int
     Current simulation number
+
     z: float
     Redshift
+
     dist_min: float
     Minimum distance to the center of the galaxy
+
     dist_max: float
     Maximum distance to the center of the galaxy
+
     dist_step: float
     Step in the distance coverage (from dist_min to dist_max).
+
     snapshot_name: str
     Name of the snapshot used (e.g. "RD0196")
+
     base_name: str
     Base name used to name the outputs
+
     catalogue_name: str
     The name of the catalogue
+
     starting_n: int
     First simulation number
     """
@@ -268,13 +321,13 @@ def run_quasar_snapshot(fn,
     ds = load_snapshot(fn)
 
     n = starting_n
-    for z in np.arange(z_min, z_max, z_step): ## REVIEWED np.arange BY ROBERTO
+    for z in np.arange(z_min, z_max, z_step):
         for j in range (12061943, 12061953, 1):
             ray = trident.make_compound_ray(
                 fn,
                 simulation_type='Enzo',
                 near_redshift=0,
-                far_redshift=(z), 
+                far_redshift=(z),
                 max_box_fraction= 1.4,
                 lines='all', ftype='gas',
                 fields=['density', 'temperature', 'metallicity'],
@@ -307,41 +360,49 @@ def run_simple_ray(ds,
                    base_name):
     """Run a simple ray from a specified start and end shifts from the centre
     of a galaxy
+
     Arguments
     ---------
     ds: ?
     The loaded snapshot
+
     z: float
     The redshift of the ray
+
     dist: float
     Distance to the centre of the galaxy
+
     start_shift: float, array
     Shift of the starting point of the ray with respect to the galaxy centre
     If a float, all 3 dimensions are equally shifted.
     If an array, it must have size=3 and each dimension will be shifted independently
+
     end_shift: float, array
     Shift of the ending point of the ray with respect to the galaxy centre.
     If a float, all 3 dimensions are equally shifted.
     If an array, it must have size=3 and each dimension will be shifted independently.
+
     snapshot_name: str
     Name of the snapshot used (e.g. "RD0196")
+
     galaxy: array
     3D position of the galaxy in the snapshot
+
     base_name: str
     Base name used to name the outputs
+
     Return
     ------
     entry: str
     A string to write in the catalogue
     """
-    start = galaxy_pos[:] + start_shift ## REVIEWED BY ROBERTO POSITIVE SIGN, EACH COORDINATE INCLUDES SIGN
+    start = galaxy_pos[:] + start_shift
     end = galaxy_pos[:] + end_shift
 
     datastart = start*ds.units.kpc
     ray_start=datastart.to('code_length')
     dataend = end*ds.units.kpc
     ray_end=dataend.to('code_length')
-    
     ray = trident.make_simple_ray(
         ds,
         start_position=ray_start,
@@ -395,6 +456,3 @@ def run_simple_ray(ds,
         f"{end_shift[0]}; {end_shift[1]}; {end_shift[2]}; "
         f"{nhi}; {b_kms}; {zfit}\n"
     )
-
-
-
