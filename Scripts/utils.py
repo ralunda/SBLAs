@@ -208,7 +208,7 @@ def run_galaxy_snapshot(fn,
                     z,
                     dist,
                     start_shift,
-                    çend_shift,
+                    end_shift,
                     snapshot_name,
                     galaxy_pos,
                     f"{base_name}{n}"))
