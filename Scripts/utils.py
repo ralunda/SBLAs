@@ -122,11 +122,14 @@ def run_galaxy_snapshot(fn,
     galaxy_pos: array
     3D position of the galaxy in the snapshot
 
-    n: int
-    Current simulation number
+    z_min: float
+    Minimu redshift
 
-    z: float
-    Redshift
+    z_max: float
+    Maximum redshift
+
+    z_step: float
+    Redshift step
 
     dist_min: float
     Minimum distance to the center of the galaxy
@@ -137,17 +140,11 @@ def run_galaxy_snapshot(fn,
     dist_step: float
     Step in the distance coverage (from dist_min to dist_max).
 
-    snapshot_name: str
-    Name of the snapshot used (e.g. "RD0196")
-
     base_name: str
     Base name used to name the outputs
 
     catalogue_name: str
     The name of the catalogue
-
-    starting_n: int
-    First simulation number
     """
     snapshot_name = fn.split("/")[0]
     ds = load_snapshot(fn)
@@ -160,7 +157,7 @@ def run_galaxy_snapshot(fn,
         if snapshot_name == "RD0180":
             # for S II 766 line (765.684000 Angs) as otherwise we get
             # MemoryError: Unable to allocate 6.10 GiB for an array
-            start_shift=[10, 10, 10]
+            start_shift=[-10, -10, -10]
             end_shift=[11, 10, 10]
             catalogue_file.write(run_simple_ray(
                 ds,
@@ -172,7 +169,7 @@ def run_galaxy_snapshot(fn,
                 galaxy_pos,
                 base_name_alt))
         else:
-            start_shift=[10, 10, 10]
+            start_shift=[-10, -10, -10]
             end_shift=[10, 10, 10]
             catalogue_file.write(run_simple_ray(
                 ds,
@@ -187,8 +184,8 @@ def run_galaxy_snapshot(fn,
         # loop over distances
         for dist in np.arange(dist_min, dist_max, dist_step):
             l = math.radians(0.0)
-            j = dist * (math.sin(l) / math.sin(math.pi/2.,-l))
-            start_shift = [dist, dist, -j]
+            j = dist * (math.sin(l) / math.sin(math.pi/2.-l))
+            start_shift = [-dist, -dist, -j]
             end_shift = [dist, -dist, -j]
             catalogue_file.write(run_simple_ray(
                 ds,
@@ -203,8 +200,8 @@ def run_galaxy_snapshot(fn,
             # case: angles up to 90
             for i in range(18, 90, 18):
                 l = math.radians(i)
-                j = dist * (math.sin(l) / math.sin(math.pi/2.,-l))
-                start_shift = [dist, dist, -j]
+                j = dist * (math.sin(l) / math.sin(math.pi/2.-l))
+                start_shift = [-dist, -dist, -j]
                 end_shift = [dist, -dist, -j]
                 catalogue_file.write(run_simple_ray(
                     ds,
@@ -217,10 +214,8 @@ def run_galaxy_snapshot(fn,
                     f"{base_name}{n}"))
                 n += 1
             # special case: 90
-            l = math.radians(90.)
-            j = dist * (math.sin(l) / math.sin(math.pi/2.,-l))
-            start_shift = [dist, dist, -j]
-            end_shift = [dist, -dist, -j]
+            start_shift = [0, -dist, dist]
+            end_shift = [0, -dist, -dist]
             catalogue_file.write(run_simple_ray(
                 ds,
                 z,
@@ -234,9 +229,9 @@ def run_galaxy_snapshot(fn,
             # case: angles from 90 to 180
             for i in range(72, 0, -18):
                 l = math.radians(i)
-                j = dist * (math.sin(l) / math.sin(math.pi/2.,-l))
+                j = dist * (math.sin(l) / math.sin(math.pi/2.-l))
                 start_shift = [dist, -dist, j]
-                end_shift = [dist, dist, j]
+                end_shift = [-dist, -dist, -j]
                 catalogue_file.write(run_simple_ray(
                     ds,
                     z,
@@ -308,7 +303,7 @@ def run_quasar_snapshot(fn,
                 fields=['density', 'temperature', 'metallicity'],
                 solution_filename=f"{base_name}{n}ray.txt",
                 data_filename=f"{base_name}{n}ray.h5",
-                seed= (j))
+                seed= j)
             spec_gen = trident.SpectrumGenerator(
                 lambda_min=3000,
                 lambda_max=9000,
@@ -371,7 +366,7 @@ def run_simple_ray(ds,
     entry: str
     A string to write in the catalogue
     """
-    start = galaxy_pos[:] - start_shift
+    start = galaxy_pos[:] + start_shift
     end = galaxy_pos[:] + end_shift
 
     datastart = start*ds.units.kpc
