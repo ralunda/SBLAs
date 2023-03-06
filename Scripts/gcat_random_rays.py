@@ -10,7 +10,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 from utils import (
-    initialize_catalogue,
+    fit_lines
     load_snapshot,
     run_galaxy_snapshot,
     run_simple_ray
@@ -229,6 +229,14 @@ def main(args):
     probs = np.random.uniform(0.0, 1.0, size=args.n_points)
     z = z_from_prob(probs)
 
+    # generate noise distributions
+    noise = None
+    if args.noise_dist is not None:
+        # TODO: draw noises
+        pass
+    else:
+        noise = np.zeros_like(z) -1.0
+
     # choose snapshots
     choices = [select_snapshot(z_aux, rho_aux, snapshots) for z_aux, rho_aux in zip(z, rho)]
     snapshot_names = snapshots["name"][choices]
@@ -239,42 +247,68 @@ def main(args):
     # get the simulation names
     names = np.array([f"{args.base_name}{i}" for i in np.arange(args.n_points)])
 
-    # initialize catalogue
-    catalogue_file = initialize_catalogue(
-        args.catalogue_file,
-        quasar=False,
-        galaxy=True)
+    # save catalogue
+    catalogue = Table({
+        "name": names,
+        "snapshot_name": snapshot_name,
+        "z": z,
+        "dist": dist,
+        "start_shift_x": start_shifts[0],
+        "start_shift_y": start_shifts[1],
+        "start_shift_z": start_shifts[2],
+        "end_shift_x": end_shifts[0],
+        "end_shift_y": end_shifts[1],
+        "end_shift_z": end_shifts[2],
+    })
+    catalogue.write(args.catalogue_file)
 
     # run the rays in parallel
-    try:
-        for snapshot in np.unique(snapshot_names):
+    for snapshot in np.unique(snapshot_names):
+        if args.test:
+            ds = None
+        else:
+            ds = load_snapshot(snapshot, args.snapshots_dir)
+        pos = np.where(snapshot_names == snapshot)
+        context = multiprocessing.get_context('fork')
+        with context.Pool(processes=args.num_processors) as pool:
+            arguments = zip(
+                repeat(ds),
+                z[pos],
+                rho[pos],
+                start_shifts[pos],
+                end_shifts[pos],
+                snapshot_names[pos],
+                galaxy_positions[pos],
+                names[pos],
+                noise[pos])
+
             if args.test:
-                ds = None
+                imap_it = pool.starmap(compute_rays, arguments)
             else:
-                ds = load_snapshot(snapshot, args.snapshots_dir)
-            pos = np.where(snapshot_names == snapshot)
-            context = multiprocessing.get_context('fork')
-            with context.Pool(processes=args.num_processors) as pool:
-                arguments = zip(
-                    repeat(ds),
-                    z[pos],
-                    rho[pos],
-                    start_shifts[pos],
-                    end_shifts[pos],
-                    snapshot_names[pos],
-                    galaxy_positions[pos],
-                    names[pos])
+                imap_it = pool.starmap(run_simple_ray_fast, arguments)
 
-                if args.test:
-                    imap_it = pool.starmap(compute_rays, arguments)
-                else:
-                    imap_it = pool.starmap(run_simple_ray, arguments)
-            for line in imap_it:
-                catalogue_file.write(line)
+            # I think this is needed to actually run things, but I should check
+            # what happens when we comment/remove this
+            for _ in imap_it:
+                pass
 
-    # close catalogue
-    finally:
-        catalogue_file.close()
+    # fit for NHI, b and z (spectra without noise)
+    if args.fit:
+        with context.Pool(processes=args.num_processors) as pool:
+            arguments = zip(
+                names,
+                repeat(".txt"),
+            )
+
+            imap_it = pool.starmap(fit_lines, arguments)
+            fit_results = [item for item in imap_it]
+
+            # update catalogue
+            catalogue["N [cm^-2]"] = fit_results[:][0]
+            catalogue["b [km/s]"] = fit_results[:][1]
+            catalogue["zfit"] = fit_results[:][2]
+            catalogue.write(args.catalogue_file)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -289,6 +323,12 @@ if __name__ == "__main__":
                         type=str,
                         default=f"{THIS_DIR}/simulations/GCAT/G_catalog.csv",
                         help="Output catalogue filename. Extension should be csv")
+    parser.add_argument("--fit",
+                        action="store_true",
+                        help="""If passed, fit line parameters on noiseless spectra
+                            and add them to the catalogue
+                        """
+    )
     parser.add_argument("--n-points",
                         type=int,
                         default=10,
