@@ -206,93 +206,172 @@ def main(args):
         args.num_processors = (multiprocessing.cpu_count() // 2)
     print("Running with nproc = ", args.num_processors)
 
-    np.random.seed(args.seed)
+    #################################
+    # continue previous run:        #
+    #  - read catalogue             #
+    #  - resume skewers computation #
+    #################################
+    if args.continue:
+        # load catalogue
+        catalogue = Table.read(args.catalogue_file)
 
-    # load snapshots info
-    snapshots = np.genfromtxt(args.snapshots, names=True, dtype=None, encoding="UTF-8")
-    if args.rho_max < 0:
-        args.rho_max = np.max(snapshots["rho_max"])
+        not_run_mask = np.zeros(len(catalogue), dtype=bool)
+        for index, entry in enumerate(catalogue["name"]):
+            if (os.path.isfile(catalogue["name"]+"spec_nonoise.fits.gz")
 
-    # generate random list of starting and ending points for the rays
-    rho = args.rho_max * np.random.uniform(0, 1, size=args.n_points)**(1/3)
-    theta_e = np.random.uniform(0, 2*np.pi, size=args.n_points)
-    theta_r = np.random.uniform(0, 2*np.pi, size=args.n_points)
-    phi_r = np.random.uniform(-np.pi, np.pi, size=args.n_points)
-    x_start, y_start, z_start, x_end, y_end, z_end = generate_ray(
-        rho, theta_e, theta_r, phi_r, 3*args.rho_max)
-    start_shifts = np.vstack([x_start, y_start, z_start]).transpose()
-    end_shifts = np.vstack([x_end, y_end, z_end]).transpose()
+        not_run_mask = np.array([
+            not (os.path.isfile(entry["name"]+"spec_nonoise.fits.gz") and
+             (entry["noise"] < 0.0 or os.path.isfile(entry["name"]+"spec.fits.gz")))
+            for entry in catalogue
+        ])
+        not_run_catalogue = catalogue[not_run_mask]
+        start_shifts = np.vstack([
+            not_run_catalogue["start_shift_x"],
+            not_run_catalogue["start_shift_y"],
+            not_run_catalogue["start_shift_z"],
+        ]).transpose()
+        end_shifts = np.vstack([
+            not_run_catalogue["end_shift_x"],
+            not_run_catalogue["end_shift_y"],
+            not_run_catalogue["end_shift_z"],
+        ]).transpose()
+        galaxy_positions = np.vstack([
+            not_run_catalogue["gal_pos_x"],
+            not_run_catalogue["gal_pos_y"],
+            not_run_catalogue["gal_pos_z"],
+        ]).transpose()
 
-    # generate redshift distributions
-    ndz = np.genfromtxt(args.z_dist, names=True, encoding="UTF-8")
-    z_from_prob = interp1d(ndz["ndz_pdf"], ndz["z"])
-    probs = np.random.uniform(0.0, 1.0, size=args.n_points)
-    z = z_from_prob(probs)
-
-    # generate noise distributions
-    noise = None
-    if args.noise_dist is not None:
-        # TODO: draw noises
-        pass
-    else:
-        noise = np.zeros_like(z) -1.0
-
-    # choose snapshots
-    choices = [select_snapshot(z_aux, rho_aux, snapshots) for z_aux, rho_aux in zip(z, rho)]
-    snapshot_names = snapshots["name"][choices]
-    galaxy_positions = np.vstack([snapshots["galaxy_pos_x"][choices],
-                                  snapshots["galaxy_pos_y"][choices],
-                                  snapshots["galaxy_pos_z"][choices]]).transpose()
-
-    # get the simulation names
-    names = np.array([f"{args.base_name}{i}" for i in np.arange(args.n_points)])
-
-    # save catalogue
-    catalogue = Table({
-        "name": names,
-        "snapshot_name": snapshot_name,
-        "z": z,
-        "dist": dist,
-        "start_shift_x": start_shifts[0],
-        "start_shift_y": start_shifts[1],
-        "start_shift_z": start_shifts[2],
-        "end_shift_x": end_shifts[0],
-        "end_shift_y": end_shifts[1],
-        "end_shift_z": end_shifts[2],
-    })
-    catalogue.write(args.catalogue_file)
-
-    # run the rays in parallel
-    for snapshot in np.unique(snapshot_names):
-        if args.test:
-            ds = None
-        else:
-            ds = load_snapshot(snapshot, args.snapshots_dir)
-        pos = np.where(snapshot_names == snapshot)
-        context = multiprocessing.get_context('fork')
-        with context.Pool(processes=args.num_processors) as pool:
-            arguments = zip(
-                repeat(ds),
-                z[pos],
-                rho[pos],
-                start_shifts[pos],
-                end_shifts[pos],
-                snapshot_names[pos],
-                galaxy_positions[pos],
-                names[pos],
-                noise[pos])
-
+        # run the missing skewers in parallel
+        for snapshot in np.unique(not_run_catalogue["snapshot_name"]):
             if args.test:
-                imap_it = pool.starmap(compute_rays, arguments)
+                ds = None
             else:
-                imap_it = pool.starmap(run_simple_ray_fast, arguments)
+                ds = load_snapshot(snapshot, args.snapshots_dir)
+            pos = np.where(snapshot_names == snapshot)
 
-            # I think this is needed to actually run things, but I should check
-            # what happens when we comment/remove this
-            for _ in imap_it:
-                pass
+            context = multiprocessing.get_context('fork')
+            with context.Pool(processes=args.num_processors) as pool:
+                arguments = zip(
+                    repeat(ds),
+                    not_run_catalogue["z"][pos],
+                    not_run_catalogue["rho"][pos],
+                    start_shifts[pos],
+                    end_shifts[pos],
+                    not_run_catalogue["snapshot_name"][pos],
+                    galaxy_positions[pos],
+                    not_run_catalogue["name"][pos],
+                    not_run_catalogue["noise"][pos])
 
-    # fit for NHI, b and z (spectra without noise)
+                if args.test:
+                    imap_it = pool.starmap(compute_rays, arguments)
+                else:
+                    imap_it = pool.starmap(run_simple_ray_fast, arguments)
+
+                # I think this is needed to actually run things, but I should check
+                # what happens when we comment/remove this
+                for _ in imap_it:
+                    pass
+
+    ####################################
+    # new run:                         #
+    #  - compute catalogue and skewers #
+    ####################################
+    else:
+        np.random.seed(args.seed)
+
+        # load snapshots info
+        snapshots = np.genfromtxt(args.snapshots, names=True, dtype=None, encoding="UTF-8")
+        if args.rho_max < 0:
+            args.rho_max = np.max(snapshots["rho_max"])
+
+        # generate random list of starting and ending points for the rays
+        rho = args.rho_max * np.random.uniform(0, 1, size=args.n_points)**(1/3)
+        theta_e = np.random.uniform(0, 2*np.pi, size=args.n_points)
+        theta_r = np.random.uniform(0, 2*np.pi, size=args.n_points)
+        phi_r = np.random.uniform(-np.pi, np.pi, size=args.n_points)
+        x_start, y_start, z_start, x_end, y_end, z_end = generate_ray(
+            rho, theta_e, theta_r, phi_r, 3*args.rho_max)
+        start_shifts = np.vstack([x_start, y_start, z_start]).transpose()
+        end_shifts = np.vstack([x_end, y_end, z_end]).transpose()
+
+        # generate redshift distributions
+        ndz = np.genfromtxt(args.z_dist, names=True, encoding="UTF-8")
+        z_from_prob = interp1d(ndz["ndz_pdf"], ndz["z"])
+        probs = np.random.uniform(0.0, 1.0, size=args.n_points)
+        z = z_from_prob(probs)
+
+        # generate noise distributions
+        noise = None
+        if args.noise_dist is not None:
+            # TODO: draw noises
+            pass
+        else:
+            noise = np.zeros_like(z) -1.0
+
+        # choose snapshots
+        choices = [select_snapshot(z_aux, rho_aux, snapshots) for z_aux, rho_aux in zip(z, rho)]
+        snapshot_names = snapshots["name"][choices]
+        galaxy_positions = np.vstack([snapshots["galaxy_pos_x"][choices],
+                                      snapshots["galaxy_pos_y"][choices],
+                                      snapshots["galaxy_pos_z"][choices]]).transpose()
+
+        # get the simulation names
+        names = np.array([f"{args.base_name}{i}" for i in np.arange(args.n_points)])
+
+        # save catalogue
+        catalogue = Table({
+            "name": names,
+            "snapshot_name": snapshot_name,
+            "z": z,
+            "rho": rho,
+            "dist": dist,
+            "start_shift_x": start_shifts[0],
+            "start_shift_y": start_shifts[1],
+            "start_shift_z": start_shifts[2],
+            "end_shift_x": end_shifts[0],
+            "end_shift_y": end_shifts[1],
+            "end_shift_z": end_shifts[2],
+            "gal_pos_x": galaxy_positions[0],
+            "gal_pos_y": galaxy_positions[1],
+            "gal_pos_z": galaxy_positions[2],
+            "noise": noise,
+        })
+        catalogue.write(args.catalogue_file)
+
+        # run the skewers in parallel
+        for snapshot in np.unique(snapshot_names):
+            if args.test:
+                ds = None
+            else:
+                ds = load_snapshot(snapshot, args.snapshots_dir)
+            pos = np.where(snapshot_names == snapshot)
+            context = multiprocessing.get_context('fork')
+            with context.Pool(processes=args.num_processors) as pool:
+                arguments = zip(
+                    repeat(ds),
+                    z[pos],
+                    rho[pos],
+                    start_shifts[pos],
+                    end_shifts[pos],
+                    snapshot_names[pos],
+                    galaxy_positions[pos],
+                    names[pos],
+                    noise[pos])
+
+                if args.test:
+                    imap_it = pool.starmap(compute_rays, arguments)
+                else:
+                    imap_it = pool.starmap(run_simple_ray_fast, arguments)
+
+                # I think this is needed to actually run things, but I should check
+                # what happens when we comment/remove this
+                for _ in imap_it:
+                    pass
+
+    ###########################
+    # fit for NHI, b and z    #
+    # (spectra without noise) #
+    ###########################
     if args.fit:
         with context.Pool(processes=args.num_processors) as pool:
             arguments = zip(
@@ -323,12 +402,13 @@ if __name__ == "__main__":
                         type=str,
                         default=f"{THIS_DIR}/simulations/GCAT/G_catalog.csv",
                         help="Output catalogue filename. Extension should be csv")
+    parser.add_argument("--continue",
+                        action="store_true",
+                        help="""Continue a previous run""")
     parser.add_argument("--fit",
                         action="store_true",
                         help="""If passed, fit line parameters on noiseless spectra
-                            and add them to the catalogue
-                        """
-    )
+                            and add them to the catalogue""")
     parser.add_argument("--n-points",
                         type=int,
                         default=10,
