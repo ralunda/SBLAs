@@ -205,6 +205,7 @@ def main(args):
     if args.num_processors == 0:
         args.num_processors = (multiprocessing.cpu_count() // 2)
     print("Running with nproc = ", args.num_processors)
+    t0 = time.time()
 
     #################################
     # continue previous run:        #
@@ -212,6 +213,9 @@ def main(args):
     #  - resume skewers computation #
     #################################
     if args.continue:
+
+        print("Continuing with exisiting run")
+        print("Loading catalogue")
         # load catalogue
         catalogue = Table.read(args.catalogue_file)
 
@@ -241,7 +245,11 @@ def main(args):
             not_run_catalogue["gal_pos_z"],
         ]).transpose()
 
+        t1 = time.time()
+        print(f"INFO: Catalogue loaded. Eelapsed time: {(t1-t0)/60.0} minutes")
+
         # run the missing skewers in parallel
+        print("Running missing skewers")
         for snapshot in np.unique(not_run_catalogue["snapshot_name"]):
             if args.test:
                 ds = None
@@ -272,11 +280,15 @@ def main(args):
                 for _ in imap_it:
                     pass
 
+        t2 = time.time()
+        print(f"INFO: Run {len(not_run_catalogue)} skewers. Eelapsed time: {(t2-t1)/60.0} minutes")
+
     ####################################
     # new run:                         #
     #  - compute catalogue and skewers #
     ####################################
     else:
+        print("Computing catalogue")
         np.random.seed(args.seed)
 
         # load snapshots info
@@ -338,7 +350,11 @@ def main(args):
         })
         catalogue.write(args.catalogue_file)
 
+        t1 = time.time()
+        print(f"INFO: Catalogue created. Eelapsed time: {(t1-t0)/60.0} minutes")
+
         # run the skewers in parallel
+        print("Running missing skewers")
         for snapshot in np.unique(snapshot_names):
             if args.test:
                 ds = None
@@ -368,6 +384,13 @@ def main(args):
                 for _ in imap_it:
                     pass
 
+
+        t2 = time.time()
+        print(f"INFO: Run {len(not_run_catalogue)} skewers. Eelapsed time: {(t2-t1)/60.0} minutes")
+
+    print("Fitting profiles")
+    t3 = time.time()
+
     ###########################
     # fit for NHI, b and z    #
     # (spectra without noise) #
@@ -387,6 +410,11 @@ def main(args):
             catalogue["b [km/s]"] = fit_results[:][1]
             catalogue["zfit"] = fit_results[:][2]
             catalogue.write(args.catalogue_file)
+
+    t4 = time.time()
+    print(f"INFO: Fits done. Eelapsed time: {(t4-t3)/60.0} minutes")
+
+    print(f"INFO: total elapsed time: {(t4-t0)/60.0} minutes")
 
 
 if __name__ == "__main__":
