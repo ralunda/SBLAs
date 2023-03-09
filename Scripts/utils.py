@@ -273,7 +273,7 @@ def run_galaxy_snapshot(fn,
             for i in range(18, 90, 18):
                 l = math.radians(i)
                 j = dist * (math.sin(l) / math.sin(math.pi/2.-l))
-                start_shift = [-dist, -dist, -j]
+                start_shift = [-dist, -dist, j]
                 end_shift = [dist, -dist, -j]
                 catalogue_file.write(run_simple_ray(
                     ds,
