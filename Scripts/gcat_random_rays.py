@@ -271,14 +271,9 @@ def main(args):
                     not_run_catalogue["noise"][pos])
 
                 if args.test:
-                    imap_it = pool.starmap(compute_rays, arguments)
+                    pool.starmap(compute_rays, arguments)
                 else:
-                    imap_it = pool.starmap(run_simple_ray_fast, arguments)
-
-                # I think this is needed to actually run things, but I should check
-                # what happens when we comment/remove this
-                for _ in imap_it:
-                    pass
+                    pool.starmap(run_simple_ray_fast, arguments)
 
         t2 = time.time()
         print(f"INFO: Run {len(not_run_catalogue)} skewers. Eelapsed time: {(t2-t1)/60.0} minutes")
@@ -375,15 +370,9 @@ def main(args):
                     noise[pos])
 
                 if args.test:
-                    imap_it = pool.starmap(compute_rays, arguments)
+                    pool.starmap(compute_rays, arguments)
                 else:
-                    imap_it = pool.starmap(run_simple_ray_fast, arguments)
-
-                # I think this is needed to actually run things, but I should check
-                # what happens when we comment/remove this
-                for _ in imap_it:
-                    pass
-
+                    pool.starmap(run_simple_ray_fast, arguments)
 
         t2 = time.time()
         print(f"INFO: Run {len(catalogue)} skewers. Eelapsed time: {(t2-t1)/60.0} minutes")
