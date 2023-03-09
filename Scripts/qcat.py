@@ -25,7 +25,7 @@ def main():
         run_quasar_snapshot(fn, z_min, z_max, z_step, base_name, catalogue_file, starting_n=1)
     # in case of errors, stop the run and close the catalogue file
     except:
-        catalogue.close()
+        catalogue_file.close()
         return
 
     ################
@@ -39,7 +39,7 @@ def main():
         run_quasar_snapshot(fn, z_min, z_max, z_step, base_name, catalogue_file, starting_n=11)
     # in case of errors, stop the run and close the catalogue file
     except:
-        catalogue.close()
+        catalogue_file.close()
         return
 
     ################
@@ -53,7 +53,7 @@ def main():
         run_quasar_snapshot(fn, z_min, z_max, z_step, base_name, catalogue_file, starting_n=121)
     # in case of errors, stop the run and close the catalogue file
     except:
-        catalogue.close()
+        catalogue_file.close()
         return
 
     ################
@@ -67,7 +67,7 @@ def main():
         run_quasar_snapshot(fn, z_min, z_max, z_step, base_name, catalogue_file, starting_n=331)
     # in case of errors, stop the run and close the catalogue file
     except:
-        catalogue.close()
+        catalogue_file.close()
         return
 
     # end of the run: close the catalogue file
