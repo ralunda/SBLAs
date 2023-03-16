@@ -221,7 +221,7 @@ def main(args):
 
         not_run_mask = np.zeros(len(catalogue), dtype=bool)
         for index, entry in enumerate(catalogue["name"]):
-            if os.path.isfile(catalogue["name"]+"spec_nonoise.fits.gz"):
+            if os.path.isfile(entry["name"]+"spec_nonoise.fits.gz"):
 
                 not_run_mask = np.array([
                     not (os.path.isfile(entry["name"]+"spec_nonoise.fits.gz") and
