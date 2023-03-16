@@ -1025,7 +1025,6 @@ def run_quasar_snapshot(fn,
 
 def run_simple_ray(ds,
                    z,
-                   dist,
                    start_shift,
                    end_shift,
                    snapshot_name,
@@ -1042,9 +1041,6 @@ def run_simple_ray(ds,
 
     z: float
     The redshift of the ray
-
-    dist: float
-    Distance to the centre of the galaxy
 
     start_shift: float, array
     Shift of the starting point of the ray with respect to the galaxy centre
@@ -1110,7 +1106,7 @@ def run_simple_ray(ds,
 
     name = base_name.split("/")[-1]
     return (
-        f"{name}; {snapshot_name}; {z}; {dist}; "
+        f"{name}; {snapshot_name}; {z}; "
         f"{start_shift[0]}; {start_shift[1]}; {start_shift[2]}; "
         f"{end_shift[0]}; {end_shift[1]}; {end_shift[2]}; "
         f"{nhi}; {b_kms}; {zfit}\n"
@@ -1118,7 +1114,6 @@ def run_simple_ray(ds,
 
 def run_simple_ray_fast(ds,
                         z,
-                        dist,
                         start_shift,
                         end_shift,
                         snapshot_name,
@@ -1135,9 +1130,6 @@ def run_simple_ray_fast(ds,
 
     z: float
     The redshift of the ray
-
-    dist: float
-    Distance to the centre of the galaxy
 
     start_shift: float, array
     Shift of the starting point of the ray with respect to the galaxy centre

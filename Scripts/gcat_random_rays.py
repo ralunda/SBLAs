@@ -24,7 +24,6 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def compute_rays(ds,
                  z,
-                 dist,
                  start_shift,
                  end_shift,
                  snapshot_name,
@@ -39,9 +38,6 @@ def compute_rays(ds,
 
     z: float
     The redshift of the ray
-
-    dist: float
-    Distance to the centre of the galaxy
 
     start_shift: float, array
     Shift of the starting point of the ray with respect to the galaxy centre
@@ -64,7 +60,7 @@ def compute_rays(ds,
     """
     name = base_name.split("/")[-1]
     return (
-        f"{name}; {snapshot_name}; {z}; {dist}; "
+        f"{name}; {snapshot_name}; {z}; "
         f"{start_shift[0]}; {start_shift[1]}; {start_shift[2]}; "
         f"{end_shift[0]}; {end_shift[1]}; {end_shift[2]}; "
         f"{0.0}; {0.0}; {0.0}\n"
@@ -335,7 +331,6 @@ def main(args):
             "snapshot_name": snapshot_names,
             "z": z,
             "rho": rho,
-            "dist": dist,
             "start_shift_x": start_shifts[0],
             "start_shift_y": start_shifts[1],
             "start_shift_z": start_shifts[2],
