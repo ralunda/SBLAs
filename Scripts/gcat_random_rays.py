@@ -8,12 +8,16 @@ from itertools import repeat
 import multiprocessing
 import numpy as np
 from scipy.interpolate import interp1d
+from astropy.table import Table
+import time
+
 
 from utils import (
-    fit_lines
+    fit_lines,
     load_snapshot,
     run_galaxy_snapshot,
-    run_simple_ray
+    run_simple_ray,
+    run_simple_ray_fast
 )
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -212,7 +216,7 @@ def main(args):
     #  - read catalogue             #
     #  - resume skewers computation #
     #################################
-    if args.continue:
+    if args.continue_run:
 
         print("Continuing with exisiting run")
         print("Loading catalogue")
@@ -221,29 +225,29 @@ def main(args):
 
         not_run_mask = np.zeros(len(catalogue), dtype=bool)
         for index, entry in enumerate(catalogue["name"]):
-            if (os.path.isfile(catalogue["name"]+"spec_nonoise.fits.gz")
+            if os.path.isfile(catalogue["name"]+"spec_nonoise.fits.gz"):
 
-        not_run_mask = np.array([
-            not (os.path.isfile(entry["name"]+"spec_nonoise.fits.gz") and
-             (entry["noise"] < 0.0 or os.path.isfile(entry["name"]+"spec.fits.gz")))
-            for entry in catalogue
-        ])
-        not_run_catalogue = catalogue[not_run_mask]
-        start_shifts = np.vstack([
-            not_run_catalogue["start_shift_x"],
-            not_run_catalogue["start_shift_y"],
-            not_run_catalogue["start_shift_z"],
-        ]).transpose()
-        end_shifts = np.vstack([
-            not_run_catalogue["end_shift_x"],
-            not_run_catalogue["end_shift_y"],
-            not_run_catalogue["end_shift_z"],
-        ]).transpose()
-        galaxy_positions = np.vstack([
-            not_run_catalogue["gal_pos_x"],
-            not_run_catalogue["gal_pos_y"],
-            not_run_catalogue["gal_pos_z"],
-        ]).transpose()
+                not_run_mask = np.array([
+                    not (os.path.isfile(entry["name"]+"spec_nonoise.fits.gz") and
+                    (entry["noise"] < 0.0 or os.path.isfile(entry["name"]+"spec.fits.gz")))
+                    for entry in catalogue
+                ])
+                not_run_catalogue = catalogue[not_run_mask]
+                start_shifts = np.vstack([
+                    not_run_catalogue["start_shift_x"],
+                    not_run_catalogue["start_shift_y"],
+                    not_run_catalogue["start_shift_z"],
+                ]).transpose()
+                end_shifts = np.vstack([
+                    not_run_catalogue["end_shift_x"],
+                    not_run_catalogue["end_shift_y"],
+                    not_run_catalogue["end_shift_z"],
+                ]).transpose()
+                galaxy_positions = np.vstack([
+                    not_run_catalogue["gal_pos_x"],
+                    not_run_catalogue["gal_pos_y"],
+                    not_run_catalogue["gal_pos_z"],
+                ]).transpose()
 
         t1 = time.time()
         print(f"INFO: Catalogue loaded. Eelapsed time: {(t1-t0)/60.0} minutes")
@@ -419,7 +423,7 @@ if __name__ == "__main__":
                         type=str,
                         default=f"{THIS_DIR}/simulations/GCAT/G_catalog.csv",
                         help="Output catalogue filename. Extension should be csv")
-    parser.add_argument("--continue",
+    parser.add_argument("--continue-run",
                         action="store_true",
                         help="""Continue a previous run""")
     parser.add_argument("--fit",
@@ -430,6 +434,11 @@ if __name__ == "__main__":
                         type=int,
                         default=10,
                         help='Number of rays to draw')
+    parser.add_argument("--noise-dist",
+                        type=str,
+                        default=None,
+                        help="""File with the noise distribution of objects.
+                            Currently this is ignored""")
     parser.add_argument("--num-processors",
                         type=int,
                         default=0,
@@ -455,12 +464,12 @@ if __name__ == "__main__":
     parser.add_argument("--test",
                         action="store_true",
                         help='Use the test function instead of run_simple_ray')
-    # TODO: fix this so that the value passed here is actually used
     parser.add_argument("--z-dist",
                         type=str,
                         default=f"{THIS_DIR}/../Data/dr16_dla_ndz.txt",
                         help="""File with the redshift distribution of objects.
-                            Must have fields z and ndz_pdf. Currently this is ignored""")
+                            Must have fields z and ndz_pdf""")
+    # TODO: fix this so that the value passed here is actually used
     parser.add_argument("--z-sun",
                         type=float,
                         default=0.02041,
