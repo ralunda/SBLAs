@@ -221,6 +221,7 @@ def main(args):
 
         not_run_mask = np.zeros(len(catalogue), dtype=bool)
         for index, entry in enumerate(catalogue["name"]):
+
             not_run_mask = np.array([
                 not (os.path.isfile(entry["name"]+"spec_nonoise.fits.gz") and
                 (entry["noise"] < 0.0 or os.path.isfile(entry["name"]+"spec.fits.gz")))
@@ -231,17 +232,17 @@ def main(args):
                 not_run_catalogue["start_shift_x"],
                 not_run_catalogue["start_shift_y"],
                 not_run_catalogue["start_shift_z"],
-            ])
+            ]).transpose()
             end_shifts = np.vstack([
                 not_run_catalogue["end_shift_x"],
                 not_run_catalogue["end_shift_y"],
                 not_run_catalogue["end_shift_z"],
-            ])
+            ]).transpose()
             galaxy_positions = np.vstack([
                 not_run_catalogue["gal_pos_x"],
                 not_run_catalogue["gal_pos_y"],
                 not_run_catalogue["gal_pos_z"],
-            ])
+            ]).transpose()
 
         t1 = time.time()
         print(f"INFO: Catalogue loaded. Eelapsed time: {(t1-t0)/60.0} minutes")
@@ -261,10 +262,10 @@ def main(args):
                     repeat(ds),
                     not_run_catalogue["z"][pos],
                     not_run_catalogue["rho"][pos],
-                    start_shifts[:][pos],
-                    end_shifts[:][pos],
+                    start_shifts[pos],
+                    end_shifts[pos],
                     not_run_catalogue["snapshot_name"][pos],
-                    galaxy_positions[:][pos],
+                    galaxy_positions[pos],
                     not_run_catalogue["name"][pos],
                     not_run_catalogue["noise"][pos])
 
@@ -296,8 +297,8 @@ def main(args):
         phi_r = np.random.uniform(-np.pi, np.pi, size=args.n_points)
         x_start, y_start, z_start, x_end, y_end, z_end = generate_ray(
             rho, theta_e, theta_r, phi_r, 3*args.rho_max)
-        start_shifts = np.vstack([x_start, y_start, z_start])
-        end_shifts = np.vstack([x_end, y_end, z_end])
+        start_shifts = np.vstack([x_start, y_start, z_start]).transpose()
+        end_shifts = np.vstack([x_end, y_end, z_end]).transpose()
 
         # generate redshift distributions
         ndz = np.genfromtxt(args.z_dist, names=True, encoding="UTF-8")
@@ -318,7 +319,7 @@ def main(args):
         snapshot_names = snapshots["name"][choices]
         galaxy_positions = np.vstack([snapshots["galaxy_pos_x"][choices],
                                       snapshots["galaxy_pos_y"][choices],
-                                      snapshots["galaxy_pos_z"][choices]])
+                                      snapshots["galaxy_pos_z"][choices]]).transpose()
 
         # get the simulation names
         names = np.array([f"{args.base_name}{i}" for i in np.arange(args.n_points)])
@@ -358,10 +359,11 @@ def main(args):
                 arguments = zip(
                     repeat(ds),
                     z[pos],
-                    start_shifts[:][pos],
-                    end_shifts[:][pos],
-                    snapshot_names[:][pos],
-                    galaxy_positions[:][pos],
+                    rho[pos],
+                    start_shifts[pos],
+                    end_shifts[pos],
+                    snapshot_names[pos],
+                    galaxy_positions[pos],
                     names[pos],
                     noise[pos])
 
