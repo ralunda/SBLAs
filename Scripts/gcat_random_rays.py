@@ -8,12 +8,16 @@ from itertools import repeat
 import multiprocessing
 import numpy as np
 from scipy.interpolate import interp1d
+from matplotlib.table import Table, table
+import time
+
 
 from utils import (
-    fit_lines
+    fit_lines,
     load_snapshot,
     run_galaxy_snapshot,
-    run_simple_ray
+    run_simple_ray,
+    run_simple_ray_fast
 )
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -212,7 +216,7 @@ def main(args):
     #  - read catalogue             #
     #  - resume skewers computation #
     #################################
-    if args.continue:
+    if args.continue_:
 
         print("Continuing with exisiting run")
         print("Loading catalogue")
@@ -221,29 +225,29 @@ def main(args):
 
         not_run_mask = np.zeros(len(catalogue), dtype=bool)
         for index, entry in enumerate(catalogue["name"]):
-            if (os.path.isfile(catalogue["name"]+"spec_nonoise.fits.gz")
+            if os.path.isfile(catalogue["name"]+"spec_nonoise.fits.gz"):
 
-        not_run_mask = np.array([
-            not (os.path.isfile(entry["name"]+"spec_nonoise.fits.gz") and
-             (entry["noise"] < 0.0 or os.path.isfile(entry["name"]+"spec.fits.gz")))
-            for entry in catalogue
-        ])
-        not_run_catalogue = catalogue[not_run_mask]
-        start_shifts = np.vstack([
-            not_run_catalogue["start_shift_x"],
-            not_run_catalogue["start_shift_y"],
-            not_run_catalogue["start_shift_z"],
-        ]).transpose()
-        end_shifts = np.vstack([
-            not_run_catalogue["end_shift_x"],
-            not_run_catalogue["end_shift_y"],
-            not_run_catalogue["end_shift_z"],
-        ]).transpose()
-        galaxy_positions = np.vstack([
-            not_run_catalogue["gal_pos_x"],
-            not_run_catalogue["gal_pos_y"],
-            not_run_catalogue["gal_pos_z"],
-        ]).transpose()
+                not_run_mask = np.array([
+                    not (os.path.isfile(entry["name"]+"spec_nonoise.fits.gz") and
+                    (entry["noise"] < 0.0 or os.path.isfile(entry["name"]+"spec.fits.gz")))
+                    for entry in catalogue
+                ])
+                not_run_catalogue = catalogue[not_run_mask]
+                start_shifts = np.vstack([
+                    not_run_catalogue["start_shift_x"],
+                    not_run_catalogue["start_shift_y"],
+                    not_run_catalogue["start_shift_z"],
+                ]).transpose()
+                end_shifts = np.vstack([
+                    not_run_catalogue["end_shift_x"],
+                    not_run_catalogue["end_shift_y"],
+                    not_run_catalogue["end_shift_z"],
+                ]).transpose()
+                galaxy_positions = np.vstack([
+                    not_run_catalogue["gal_pos_x"],
+                    not_run_catalogue["gal_pos_y"],
+                    not_run_catalogue["gal_pos_z"],
+                ]).transpose()
 
         t1 = time.time()
         print(f"INFO: Catalogue loaded. Eelapsed time: {(t1-t0)/60.0} minutes")
@@ -309,7 +313,7 @@ def main(args):
 
         # generate noise distributions
         noise = None
-        if args.noise_dist is not None:
+        if args.noise_dist is not None: # noise_dist no attribute
             # TODO: draw noises
             pass
         else:
@@ -419,7 +423,7 @@ if __name__ == "__main__":
                         type=str,
                         default=f"{THIS_DIR}/simulations/GCAT/G_catalog.csv",
                         help="Output catalogue filename. Extension should be csv")
-    parser.add_argument("--continue",
+    parser.add_argument("--continue_",
                         action="store_true",
                         help="""Continue a previous run""")
     parser.add_argument("--fit",
