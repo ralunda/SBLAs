@@ -312,10 +312,10 @@ def main(args):
         z = z_from_prob(probs)
 
         # generate noise distributions
-        noise = None
         if args.noise_dist is not None:
             # TODO: draw noises
-            pass
+            # This needs to be replaced
+            noise = np.zeros_like(z) -1.0
         else:
             noise = np.zeros_like(z) -1.0
 
