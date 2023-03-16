@@ -8,7 +8,7 @@ from itertools import repeat
 import multiprocessing
 import numpy as np
 from scipy.interpolate import interp1d
-from matplotlib.table import Table, table
+from astropy.table import Table
 import time
 
 
@@ -216,7 +216,7 @@ def main(args):
     #  - read catalogue             #
     #  - resume skewers computation #
     #################################
-    if args.continue_:
+    if args.continue:
 
         print("Continuing with exisiting run")
         print("Loading catalogue")
@@ -313,7 +313,7 @@ def main(args):
 
         # generate noise distributions
         noise = None
-        if args.noise_dist is not None: # noise_dist no attribute
+        if args.noise_dist is not None:
             # TODO: draw noises
             pass
         else:
@@ -423,7 +423,7 @@ if __name__ == "__main__":
                         type=str,
                         default=f"{THIS_DIR}/simulations/GCAT/G_catalog.csv",
                         help="Output catalogue filename. Extension should be csv")
-    parser.add_argument("--continue_",
+    parser.add_argument("--continue",
                         action="store_true",
                         help="""Continue a previous run""")
     parser.add_argument("--fit",
@@ -434,6 +434,11 @@ if __name__ == "__main__":
                         type=int,
                         default=10,
                         help='Number of rays to draw')
+    parser.add_argument("--noise-dist",
+                        type=str,
+                        default=None,
+                        help="""File with the noise distribution of objects.
+                            Currently this is ignored""")
     parser.add_argument("--num-processors",
                         type=int,
                         default=0,
@@ -459,12 +464,12 @@ if __name__ == "__main__":
     parser.add_argument("--test",
                         action="store_true",
                         help='Use the test function instead of run_simple_ray')
-    # TODO: fix this so that the value passed here is actually used
     parser.add_argument("--z-dist",
                         type=str,
                         default=f"{THIS_DIR}/Data/dr16_dla_ndz.txt",
                         help="""File with the redshift distribution of objects.
-                            Must have fields z and ndz_pdf. Currently this is ignored""")
+                            Must have fields z and ndz_pdf""")
+    # TODO: fix this so that the value passed here is actually used
     parser.add_argument("--z-sun",
                         type=float,
                         default=0.02041,
