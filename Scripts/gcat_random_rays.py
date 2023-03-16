@@ -358,7 +358,6 @@ def main(args):
                 arguments = zip(
                     repeat(ds),
                     z[pos],
-                    rho[pos],
                     start_shifts[pos],
                     end_shifts[pos],
                     snapshot_names[pos],
