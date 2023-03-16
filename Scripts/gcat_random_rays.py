@@ -451,7 +451,7 @@ if __name__ == "__main__":
                             infer from --snapshots""")
     parser.add_argument("--snapshots",
                         type=str,
-                        default=f"{THIS_DIR}/Data/snapshots.txt",
+                        default=f"{THIS_DIR}/../Data/snapshots.txt",
                         help='File containing the snapshot information')
     parser.add_argument("--snapshots-dir",
                         type=str,
@@ -466,7 +466,7 @@ if __name__ == "__main__":
                         help='Use the test function instead of run_simple_ray')
     parser.add_argument("--z-dist",
                         type=str,
-                        default=f"{THIS_DIR}/Data/dr16_dla_ndz.txt",
+                        default=f"{THIS_DIR}/../Data/dr16_dla_ndz.txt",
                         help="""File with the redshift distribution of objects.
                             Must have fields z and ndz_pdf""")
     # TODO: fix this so that the value passed here is actually used
