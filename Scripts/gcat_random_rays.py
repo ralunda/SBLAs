@@ -216,7 +216,7 @@ def main(args):
     #  - read catalogue             #
     #  - resume skewers computation #
     #################################
-    if args.continue:
+    if args.continue_run:
 
         print("Continuing with exisiting run")
         print("Loading catalogue")
@@ -423,7 +423,7 @@ if __name__ == "__main__":
                         type=str,
                         default=f"{THIS_DIR}/simulations/GCAT/G_catalog.csv",
                         help="Output catalogue filename. Extension should be csv")
-    parser.add_argument("--continue",
+    parser.add_argument("--continue-run",
                         action="store_true",
                         help="""Continue a previous run""")
     parser.add_argument("--fit",
