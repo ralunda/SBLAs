@@ -332,7 +332,7 @@ def main(args):
         # save catalogue
         catalogue = Table({
             "name": names,
-            "snapshot_name": snapshot_name,
+            "snapshot_name": snapshot_names,
             "z": z,
             "rho": rho,
             "dist": dist,
