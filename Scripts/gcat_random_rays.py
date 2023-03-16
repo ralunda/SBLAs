@@ -261,7 +261,6 @@ def main(args):
                 arguments = zip(
                     repeat(ds),
                     not_run_catalogue["z"][pos],
-                    not_run_catalogue["rho"][pos],
                     start_shifts[pos],
                     end_shifts[pos],
                     not_run_catalogue["snapshot_name"][pos],
@@ -362,7 +361,6 @@ def main(args):
                 arguments = zip(
                     repeat(ds),
                     z[pos],
-                    rho[pos],
                     start_shifts[pos],
                     end_shifts[pos],
                     snapshot_names[pos],
