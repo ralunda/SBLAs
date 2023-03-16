@@ -254,7 +254,7 @@ def main(args):
                 ds = None
             else:
                 ds = load_snapshot(snapshot, args.snapshots_dir)
-            pos = np.where(snapshot_names == snapshot)
+            pos = np.where(not_run_catalogue["snapshot_name"] == snapshot)
 
             context = multiprocessing.get_context('fork')
             with context.Pool(processes=args.num_processors) as pool:
