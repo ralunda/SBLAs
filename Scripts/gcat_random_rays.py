@@ -221,29 +221,27 @@ def main(args):
 
         not_run_mask = np.zeros(len(catalogue), dtype=bool)
         for index, entry in enumerate(catalogue["name"]):
-            if os.path.isfile(entry["name"]+"spec_nonoise.fits.gz"):
-
-                not_run_mask = np.array([
-                    not (os.path.isfile(entry["name"]+"spec_nonoise.fits.gz") and
-                    (entry["noise"] < 0.0 or os.path.isfile(entry["name"]+"spec.fits.gz")))
-                    for entry in catalogue
-                ])
-                not_run_catalogue = catalogue[not_run_mask]
-                start_shifts = np.vstack([
-                    not_run_catalogue["start_shift_x"],
-                    not_run_catalogue["start_shift_y"],
-                    not_run_catalogue["start_shift_z"],
-                ])
-                end_shifts = np.vstack([
-                    not_run_catalogue["end_shift_x"],
-                    not_run_catalogue["end_shift_y"],
-                    not_run_catalogue["end_shift_z"],
-                ])
-                galaxy_positions = np.vstack([
-                    not_run_catalogue["gal_pos_x"],
-                    not_run_catalogue["gal_pos_y"],
-                    not_run_catalogue["gal_pos_z"],
-                ])
+            not_run_mask = np.array([
+                not (os.path.isfile(entry["name"]+"spec_nonoise.fits.gz") and
+                (entry["noise"] < 0.0 or os.path.isfile(entry["name"]+"spec.fits.gz")))
+                for entry in catalogue
+            ])
+            not_run_catalogue = catalogue[not_run_mask]
+            start_shifts = np.vstack([
+                not_run_catalogue["start_shift_x"],
+                not_run_catalogue["start_shift_y"],
+                not_run_catalogue["start_shift_z"],
+            ])
+            end_shifts = np.vstack([
+                not_run_catalogue["end_shift_x"],
+                not_run_catalogue["end_shift_y"],
+                not_run_catalogue["end_shift_z"],
+            ])
+            galaxy_positions = np.vstack([
+                not_run_catalogue["gal_pos_x"],
+                not_run_catalogue["gal_pos_y"],
+                not_run_catalogue["gal_pos_z"],
+            ])
 
         t1 = time.time()
         print(f"INFO: Catalogue loaded. Eelapsed time: {(t1-t0)/60.0} minutes")
