@@ -261,10 +261,10 @@ def main(args):
                     repeat(ds),
                     not_run_catalogue["z"][pos],
                     not_run_catalogue["rho"][pos],
-                    start_shifts[pos],
-                    end_shifts[pos],
+                    start_shifts[:][pos],
+                    end_shifts[:][pos],
                     not_run_catalogue["snapshot_name"][pos],
-                    galaxy_positions[pos],
+                    galaxy_positions[:][pos],
                     not_run_catalogue["name"][pos],
                     not_run_catalogue["noise"][pos])
 
@@ -358,10 +358,10 @@ def main(args):
                 arguments = zip(
                     repeat(ds),
                     z[pos],
-                    start_shifts[pos],
-                    end_shifts[pos],
-                    snapshot_names[pos],
-                    galaxy_positions[pos],
+                    start_shifts[:][pos],
+                    end_shifts[:][pos],
+                    snapshot_names[:][pos],
+                    galaxy_positions[:][pos],
                     names[pos],
                     noise[pos])
 
