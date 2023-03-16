@@ -24,7 +24,6 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def compute_rays(ds,
                  z,
-                 dist,
                  start_shift,
                  end_shift,
                  snapshot_name,
@@ -39,9 +38,6 @@ def compute_rays(ds,
 
     z: float
     The redshift of the ray
-
-    dist: float
-    Distance to the centre of the galaxy
 
     start_shift: float, array
     Shift of the starting point of the ray with respect to the galaxy centre
@@ -64,7 +60,7 @@ def compute_rays(ds,
     """
     name = base_name.split("/")[-1]
     return (
-        f"{name}; {snapshot_name}; {z}; {dist}; "
+        f"{name}; {snapshot_name}; {z}; "
         f"{start_shift[0]}; {start_shift[1]}; {start_shift[2]}; "
         f"{end_shift[0]}; {end_shift[1]}; {end_shift[2]}; "
         f"{0.0}; {0.0}; {0.0}\n"
@@ -225,29 +221,28 @@ def main(args):
 
         not_run_mask = np.zeros(len(catalogue), dtype=bool)
         for index, entry in enumerate(catalogue["name"]):
-            if os.path.isfile(catalogue["name"]+"spec_nonoise.fits.gz"):
 
-                not_run_mask = np.array([
-                    not (os.path.isfile(entry["name"]+"spec_nonoise.fits.gz") and
-                    (entry["noise"] < 0.0 or os.path.isfile(entry["name"]+"spec.fits.gz")))
-                    for entry in catalogue
-                ])
-                not_run_catalogue = catalogue[not_run_mask]
-                start_shifts = np.vstack([
-                    not_run_catalogue["start_shift_x"],
-                    not_run_catalogue["start_shift_y"],
-                    not_run_catalogue["start_shift_z"],
-                ]).transpose()
-                end_shifts = np.vstack([
-                    not_run_catalogue["end_shift_x"],
-                    not_run_catalogue["end_shift_y"],
-                    not_run_catalogue["end_shift_z"],
-                ]).transpose()
-                galaxy_positions = np.vstack([
-                    not_run_catalogue["gal_pos_x"],
-                    not_run_catalogue["gal_pos_y"],
-                    not_run_catalogue["gal_pos_z"],
-                ]).transpose()
+            not_run_mask = np.array([
+                not (os.path.isfile(entry["name"]+"spec_nonoise.fits.gz") and
+                (entry["noise"] < 0.0 or os.path.isfile(entry["name"]+"spec.fits.gz")))
+                for entry in catalogue
+            ])
+            not_run_catalogue = catalogue[not_run_mask]
+            start_shifts = np.vstack([
+                not_run_catalogue["start_shift_x"],
+                not_run_catalogue["start_shift_y"],
+                not_run_catalogue["start_shift_z"],
+            ]).transpose()
+            end_shifts = np.vstack([
+                not_run_catalogue["end_shift_x"],
+                not_run_catalogue["end_shift_y"],
+                not_run_catalogue["end_shift_z"],
+            ]).transpose()
+            galaxy_positions = np.vstack([
+                not_run_catalogue["gal_pos_x"],
+                not_run_catalogue["gal_pos_y"],
+                not_run_catalogue["gal_pos_z"],
+            ]).transpose()
 
         t1 = time.time()
         print(f"INFO: Catalogue loaded. Eelapsed time: {(t1-t0)/60.0} minutes")
@@ -259,14 +254,13 @@ def main(args):
                 ds = None
             else:
                 ds = load_snapshot(snapshot, args.snapshots_dir)
-            pos = np.where(snapshot_names == snapshot)
+            pos = np.where(not_run_catalogue["snapshot_name"] == snapshot)
 
             context = multiprocessing.get_context('fork')
             with context.Pool(processes=args.num_processors) as pool:
                 arguments = zip(
                     repeat(ds),
                     not_run_catalogue["z"][pos],
-                    not_run_catalogue["rho"][pos],
                     start_shifts[pos],
                     end_shifts[pos],
                     not_run_catalogue["snapshot_name"][pos],
@@ -322,9 +316,12 @@ def main(args):
         # choose snapshots
         choices = [select_snapshot(z_aux, rho_aux, snapshots) for z_aux, rho_aux in zip(z, rho)]
         snapshot_names = snapshots["name"][choices]
-        galaxy_positions = np.vstack([snapshots["galaxy_pos_x"][choices],
-                                      snapshots["galaxy_pos_y"][choices],
-                                      snapshots["galaxy_pos_z"][choices]]).transpose()
+        galaxy_position_x = snapshots["galaxy_pos_x"][choices]
+        galaxy_position_y = snapshots["galaxy_pos_y"][choices]
+        galaxy_position_z = snapshots["galaxy_pos_z"][choices]
+        galaxy_positions = np.vstack([galaxy_position_x,
+                                      galaxy_position_y,
+                                      galaxy_position_z]).transpose()
 
         # get the simulation names
         names = np.array([f"{args.base_name}{i}" for i in np.arange(args.n_points)])
@@ -335,16 +332,15 @@ def main(args):
             "snapshot_name": snapshot_names,
             "z": z,
             "rho": rho,
-            "dist": dist,
-            "start_shift_x": start_shifts[0],
-            "start_shift_y": start_shifts[1],
-            "start_shift_z": start_shifts[2],
-            "end_shift_x": end_shifts[0],
-            "end_shift_y": end_shifts[1],
-            "end_shift_z": end_shifts[2],
-            "gal_pos_x": galaxy_positions[0],
-            "gal_pos_y": galaxy_positions[1],
-            "gal_pos_z": galaxy_positions[2],
+            "start_shift_x": x_start,
+            "start_shift_y": y_start,
+            "start_shift_z": z_start,
+            "end_shift_x": x_end,
+            "end_shift_y": y_end,
+            "end_shift_z": z_end,
+            "gal_pos_x": galaxy_position_x,
+            "gal_pos_y": galaxy_position_y,
+            "gal_pos_z": galaxy_position_z,
             "noise": noise,
         })
         catalogue.write(args.catalogue_file)
@@ -365,7 +361,6 @@ def main(args):
                 arguments = zip(
                     repeat(ds),
                     z[pos],
-                    rho[pos],
                     start_shifts[pos],
                     end_shifts[pos],
                     snapshot_names[pos],
