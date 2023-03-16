@@ -317,9 +317,12 @@ def main(args):
         # choose snapshots
         choices = [select_snapshot(z_aux, rho_aux, snapshots) for z_aux, rho_aux in zip(z, rho)]
         snapshot_names = snapshots["name"][choices]
-        galaxy_positions = np.vstack([snapshots["galaxy_pos_x"][choices],
-                                      snapshots["galaxy_pos_y"][choices],
-                                      snapshots["galaxy_pos_z"][choices]]).transpose()
+        galaxy_position_x = snapshots["galaxy_pos_x"][choices]
+        galaxy_position_y = snapshots["galaxy_pos_y"][choices]
+        galaxy_position_z = snapshots["galaxy_pos_z"][choices]
+        galaxy_positions = np.vstack([galaxy_position_x,
+                                      galaxy_position_y,
+                                      galaxy_position_z]).transpose()
 
         # get the simulation names
         names = np.array([f"{args.base_name}{i}" for i in np.arange(args.n_points)])
@@ -330,15 +333,15 @@ def main(args):
             "snapshot_name": snapshot_names,
             "z": z,
             "rho": rho,
-            "start_shift_x": start_shifts[0],
-            "start_shift_y": start_shifts[1],
-            "start_shift_z": start_shifts[2],
-            "end_shift_x": end_shifts[0],
-            "end_shift_y": end_shifts[1],
-            "end_shift_z": end_shifts[2],
-            "gal_pos_x": galaxy_positions[0],
-            "gal_pos_y": galaxy_positions[1],
-            "gal_pos_z": galaxy_positions[2],
+            "start_shift_x": x_start,
+            "start_shift_y": y_start,
+            "start_shift_z": z_start,
+            "end_shift_x": x_end,
+            "end_shift_y": y_end,
+            "end_shift_z": z_end,
+            "gal_pos_x": galaxy_position_x,
+            "gal_pos_y": galaxy_position_y,
+            "gal_pos_z": galaxy_position_z,
             "noise": noise,
         })
         catalogue.write(args.catalogue_file)
