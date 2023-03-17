@@ -213,24 +213,6 @@ def main(args):
             not_run_catalogue["gal_pos_z"],
         ]).transpose()
 
-        # save catalogue
-        catalogue = Table({
-            "name": names,
-            "snapshot_name": snapshot_names,
-            "z": redshifts,
-            "rho": rho,
-            "start_shift_x": x_start,
-            "start_shift_y": y_start,
-            "start_shift_z": z_start,
-            "end_shift_x": x_end,
-            "end_shift_y": y_end,
-            "end_shift_z": z_end,
-            "gal_pos_x": galaxy_position_x,
-            "gal_pos_y": galaxy_position_y,
-            "gal_pos_z": galaxy_position_z,
-            "noise": noise,
-        })
-
         t1_1 = time.time()
         print(f"INFO: Catalogue loaded. Elapsed time: {(t1_1-t1_0)/60.0} minutes")
 
