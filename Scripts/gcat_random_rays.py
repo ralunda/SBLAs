@@ -207,7 +207,7 @@ def main(args):
             ]).transpose()
 
         t1 = time.time()
-        print(f"INFO: Catalogue loaded. Eelapsed time: {(t1-t0)/60.0} minutes")
+        print(f"INFO: Catalogue loaded. Elapsed time: {(t1-t0)/60.0} minutes")
 
         # run the missing skewers in parallel
         print("Running missing skewers")
@@ -231,7 +231,7 @@ def main(args):
                 pool.starmap(run_simple_ray_fast, arguments)
 
         t2 = time.time()
-        print(f"INFO: Run {len(not_run_catalogue)} skewers. Eelapsed time: {(t2-t1)/60.0} minutes")
+        print(f"INFO: Run {len(not_run_catalogue)} skewers. lapsed time: {(t2-t1)/60.0} minutes")
 
     ####################################
     # new run:                         #
@@ -318,7 +318,7 @@ def main(args):
         catalogue.write(f"{args.output_dir}/{args.catalogue_file}")
 
         t1 = time.time()
-        print(f"INFO: Catalogue created. Eelapsed time: {(t1-t0)/60.0} minutes")
+        print(f"INFO: Catalogue created. Elapsed time: {(t1-t0)/60.0} minutes")
 
         # run the skewers in parallel
         print("Running skewers")
@@ -342,7 +342,7 @@ def main(args):
 
 
         t2 = time.time()
-        print(f"INFO: Run {len(catalogue)} skewers. Eelapsed time: {(t2-t1)/60.0} minutes")
+        print(f"INFO: Run {len(catalogue)} skewers. Elapsed time: {(t2-t1)/60.0} minutes")
 
     print("Fitting profiles")
     t3 = time.time()
