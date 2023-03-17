@@ -11,14 +11,20 @@ from scipy.interpolate import interp1d
 from astropy.table import Table
 import time
 
+from yt.utilities.logger import set_log_level as set_log_level_yt
+from yt.config import ytcfg
+
 from utils import (
     fit_lines,
     load_snapshot,
-    run_galaxy_snapshot,
+    run_galaxy_snapshot_fast,
     run_simple_ray,
     run_simple_ray_fast
 )
 
+# set yt log level
+set_log_level_yt("error")
+ytcfg.update({"yt": {"suppress_stream_logging": True}})
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
