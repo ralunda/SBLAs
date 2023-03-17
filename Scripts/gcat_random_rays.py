@@ -10,7 +10,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 from astropy.table import Table
 import time
-
+import logging
 
 from utils import (
     fit_lines,
@@ -19,6 +19,8 @@ from utils import (
     run_simple_ray,
     run_simple_ray_fast
 )
+
+logging.set_level(logging.ERROR)
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -278,7 +280,8 @@ def main(args):
 
         # get the simulation names
         names = np.array([
-            f"{args.base_name}_{snapshot}_z{z}_x{xs}_{xe}_y{ys}_{ye}_z{zs}_{ze}"
+            (f"{args.base_name}_{snapshot}_z{z:.4f}_x{xs:.4f}_{xe:.4f}_"
+             "y{ys:.4f}_{ye:.4f}_z{zs:.4f}_{ze:.4f}")
             for snapshot, z, xs, xe, ys, ye, zs, ze in zip(
                 snapshot_names,
                 redshifts,
