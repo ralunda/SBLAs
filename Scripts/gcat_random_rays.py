@@ -339,7 +339,7 @@ def main(args):
 
 
     t2_1 = time.time()
-    print(f"INFO: Run {len(catalogue)} skewers. Elapsed time: {(t2_1-t2_0)/60.0} minutes")
+    print(f"INFO: Run {len(snapshot_names)} skewers. Elapsed time: {(t2_1-t2_0)/60.0} minutes")
 
     print("Fitting profiles")
     t3_0 = time.time()
