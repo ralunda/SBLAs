@@ -786,10 +786,10 @@ def load_snapshot(fn, dir=""):
 
     Return
     ------
-    ds: ?
+    ds: yt.data_objects.static_output.Dataset
     The loaded snapshot
     """
-    ds = yt.load(dir+fn)
+    ds = yt.load(f"{dir}{fn}/{fn}")
     ds.add_field(
         ("gas", "metallicity"),
         function=metallicity_e,
@@ -1036,7 +1036,7 @@ def run_simple_ray(ds,
 
     Arguments
     ---------
-    ds: ?
+    ds: yt.data_objects.static_output.Dataset
     The loaded snapshot
 
     z: float
@@ -1126,7 +1126,7 @@ def run_simple_ray_fast(ds,
 
     Arguments
     ---------
-    ds: ?
+    ds: yt.data_objects.static_output.Dataset
     The loaded snapshot
 
     z: float
