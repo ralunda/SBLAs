@@ -192,6 +192,16 @@ def main(args):
         not_run_catalogue = catalogue[not_run_mask]
         print(f"{len(not_run_catalogue)} skewers were not previously run")
 
+        # test code
+        entry = catalogue[0]
+        print(entry)
+        print("Nonoise file present: " , os.path.isfile(f"{args.output_dir}/"+entry["name"]+"spec_nonoise.fits.gz"))
+        print("Noise: ", entry["noise"] < 0.0)
+        print("Noise file present: ", os.path.isfile(f"{args.output_dir}/"+entry["name"]+"spec.fits.gz"))
+        print("Noise or Noise file present: ", (entry["noise"] < 0.0 or os.path.isfile(f"{args.output_dir}/"+entry["name"]+"spec.fits.gz")))
+        print("Nonoise file present + (Noise or Noise file present)", (os.path.isfile(f"{args.output_dir}/"+entry["name"]+"spec_nonoise.fits.gz") and (entry["noise"] < 0.0 or os.path.isfile(f"{args.output_dir}/"+entry["name"]+"spec.fits.gz"))))
+        print("Final decision: ", not (os.path.isfile(f"{args.output_dir}/"+entry["name"]+"spec_nonoise.fits.gz") and (entry["noise"] < 0.0 or os.path.isfile(f"{args.output_dir}/"+entry["name"]+"spec.fits.gz"))))
+
         # prepare variables to run
         snapshot_names = not_run_catalogue["snapshot_name"]
         redshifts = not_run_catalogue["z"]
