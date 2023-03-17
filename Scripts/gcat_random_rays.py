@@ -158,9 +158,6 @@ def main(args):
     args: argparse.Namespace
     Parsed arguments (parser at the bottom of the file).
     """
-    if args.num_processors == 0:
-        args.num_processors = (multiprocessing.cpu_count() // 2)
-    print("Running with nproc = ", args.num_processors)
     t0 = time.time()
 
     #################################
@@ -175,33 +172,30 @@ def main(args):
         # load catalogue
         catalogue = Table.read(f"{args.output_dir}/{args.catalogue_file}")
 
-        not_run_mask = np.zeros(len(catalogue), dtype=bool)
-        for index, entry in enumerate(catalogue["name"]):
-
-            not_run_mask = np.array([
-                not (os.path.isfile(entry["name"]+"spec_nonoise.fits.gz") and
-                (entry["noise"] < 0.0 or os.path.isfile(entry["name"]+"spec.fits.gz")))
-                for entry in catalogue
-            ])
-            not_run_catalogue = catalogue[not_run_mask]
-            start_shifts = np.vstack([
-                not_run_catalogue["start_shift_x"],
-                not_run_catalogue["start_shift_y"],
-                not_run_catalogue["start_shift_z"],
-            ]).transpose()
-            end_shifts = np.vstack([
-                not_run_catalogue["end_shift_x"],
-                not_run_catalogue["end_shift_y"],
-                not_run_catalogue["end_shift_z"],
-            ]).transpose()
-            galaxy_positions = np.vstack([
-                not_run_catalogue["gal_pos_x"],
-                not_run_catalogue["gal_pos_y"],
-                not_run_catalogue["gal_pos_z"],
-            ]).transpose()
+        not_run_mask = np.array([
+            not (os.path.isfile(entry["name"]+"spec_nonoise.fits.gz") and
+            (entry["noise"] < 0.0 or os.path.isfile(entry["name"]+"spec.fits.gz")))
+            for entry in catalogue
+        ])
+        not_run_catalogue = catalogue[not_run_mask]
+        start_shifts = np.vstack([
+            not_run_catalogue["start_shift_x"],
+            not_run_catalogue["start_shift_y"],
+            not_run_catalogue["start_shift_z"],
+        ]).transpose()
+        end_shifts = np.vstack([
+            not_run_catalogue["end_shift_x"],
+            not_run_catalogue["end_shift_y"],
+            not_run_catalogue["end_shift_z"],
+        ]).transpose()
+        galaxy_positions = np.vstack([
+            not_run_catalogue["gal_pos_x"],
+            not_run_catalogue["gal_pos_y"],
+            not_run_catalogue["gal_pos_z"],
+        ]).transpose()
 
         t1 = time.time()
-        print(f"INFO: Catalogue loaded. Eelapsed time: {(t1-t0)/60.0} minutes")
+        print(f"INFO: Catalogue loaded. Elapsed time: {(t1-t0)/60.0} minutes")
 
         # run the missing skewers in parallel
         print("Running missing skewers")
@@ -209,20 +203,16 @@ def main(args):
             ds = load_snapshot(snapshot, args.snapshots_dir)
             pos = np.where(not_run_catalogue["snapshot_name"] == snapshot)
 
-            context = multiprocessing.get_context('fork')
-            with context.Pool(processes=args.num_processors) as pool:
-                arguments = zip(
-                    repeat(ds),
-                    not_run_catalogue["z"][pos],
-                    start_shifts[pos],
-                    end_shifts[pos],
-                    not_run_catalogue["snapshot_name"][pos],
-                    galaxy_positions[pos],
-                    not_run_catalogue["name"][pos],
-                    repeat(args.output_dir),
-                    not_run_catalogue["noise"][pos])
-
-                pool.starmap(run_simple_ray_fast, arguments)
+            for arguments in zip(repeat(ds),
+                                 not_run_catalogue["z"][pos],
+                                 start_shifts[pos],
+                                 end_shifts[pos],
+                                 not_run_catalogue["snapshot_name"][pos],
+                                 galaxy_positions[pos],
+                                 not_run_catalogue["name"][pos],
+                                 repeat(args.output_dir),
+                                 not_run_catalogue["noise"][pos]):
+                run_simple_ray_fast(*arguments)
 
         t2 = time.time()
         print(f"INFO: Run {len(not_run_catalogue)} skewers. Eelapsed time: {(t2-t1)/60.0} minutes")
@@ -312,31 +302,27 @@ def main(args):
         catalogue.write(f"{args.output_dir}/{args.catalogue_file}")
 
         t1 = time.time()
-        print(f"INFO: Catalogue created. Eelapsed time: {(t1-t0)/60.0} minutes")
+        print(f"INFO: Catalogue created. Elapsed time: {(t1-t0)/60.0} minutes")
 
-        # run the skewers in parallel
+        # run the skewers
         print("Running skewers")
         for snapshot in np.unique(snapshot_names):
             ds = load_snapshot(snapshot, args.snapshots_dir)
             pos = np.where(snapshot_names == snapshot)
-            context = multiprocessing.get_context('fork')
-            with context.Pool(processes=args.num_processors) as pool:
-                arguments = zip(
-                    repeat(ds),
-                    redshifts[pos],
-                    start_shifts[pos],
-                    end_shifts[pos],
-                    snapshot_names[pos],
-                    galaxy_positions[pos],
-                    names[pos],
-                    repeat(args.output_dir),
-                    noise[pos])
-
-                pool.starmap(run_simple_ray_fast, arguments)
+            for arguments in zip(repeat(ds),
+                                 redshifts[pos],
+                                 start_shifts[pos],
+                                 end_shifts[pos],
+                                 snapshot_names[pos],
+                                 galaxy_positions[pos],
+                                 names[pos],
+                                 repeat(args.output_dir),
+                                 noise[pos]):
+                run_simple_ray(*arguments)
 
 
-        t2 = time.time()
-        print(f"INFO: Run {len(catalogue)} skewers. Eelapsed time: {(t2-t1)/60.0} minutes")
+    t2 = time.time()
+    print(f"INFO: Run {len(catalogue)} skewers. Elapsed time: {(t2-t1)/60.0} minutes")
 
     print("Fitting profiles")
     t3 = time.time()
@@ -346,23 +332,19 @@ def main(args):
     # (spectra without noise) #
     ###########################
     if args.fit:
-        with context.Pool(processes=args.num_processors) as pool:
-            arguments = zip(
-                names,
-                repeat(".txt"),
-            )
+        fit_results = [
+            fit_lines(name, ".txt")
+            for name in catalogue["name"]
+        ]
 
-            imap_it = pool.starmap(fit_lines, arguments)
-            fit_results = [item for item in imap_it]
-
-            # update catalogue
-            catalogue["N [cm^-2]"] = fit_results[:][0]
-            catalogue["b [km/s]"] = fit_results[:][1]
-            catalogue["zfit"] = fit_results[:][2]
-            catalogue.write(args.catalogue_file)
+        # update catalogue
+        catalogue["N [cm^-2]"] = fit_results[:][0]
+        catalogue["b [km/s]"] = fit_results[:][1]
+        catalogue["zfit"] = fit_results[:][2]
+        catalogue.write(args.catalogue_file)
 
     t4 = time.time()
-    print(f"INFO: Fits done. Eelapsed time: {(t4-t3)/60.0} minutes")
+    print(f"INFO: Fits done. Elapsed time: {(t4-t3)/60.0} minutes")
 
     print(f"INFO: total elapsed time: {(t4-t0)/60.0} minutes")
 
@@ -396,11 +378,6 @@ if __name__ == "__main__":
                         default=None,
                         help="""File with the noise distribution of objects.
                             Currently this is ignored""")
-    parser.add_argument("--num-processors",
-                        type=int,
-                        default=0,
-                        help="""Number of processors to use. If 0 use
-                            multiprocessing.cpu_count() // 2)""")
     parser.add_argument("--output-dir",
                         type=str,
                         required=True,
