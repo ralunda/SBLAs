@@ -265,7 +265,9 @@ def main(args):
             noise = np.zeros_like(redshifts) -1.0
 
         # choose snapshots
-        choices = [select_snapshot(z_aux, rho_aux, snapshots) for z_aux, rho_aux in zip(z, rho)]
+        choices = [
+            select_snapshot(z_aux, rho_aux, snapshots)
+            for z_aux, rho_aux in zip(redshifts, rho)]
         snapshot_names = snapshots["name"][choices]
         galaxy_position_x = snapshots["galaxy_pos_x"][choices]
         galaxy_position_y = snapshots["galaxy_pos_y"][choices]
