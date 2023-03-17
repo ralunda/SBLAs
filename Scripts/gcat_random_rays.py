@@ -195,8 +195,10 @@ def main(args):
         # test code
         entry = catalogue[0]
         print(entry)
+        print("Nonoise file: ", f"{args.output_dir}/"+entry["name"]+"spec_nonoise.fits.gz")
         print("Nonoise file present: " , os.path.isfile(f"{args.output_dir}/"+entry["name"]+"spec_nonoise.fits.gz"))
         print("Noise: ", entry["noise"] < 0.0)
+        print("Noise file: ", f"{args.output_dir}/"+entry["name"]+"spec.fits.gz")
         print("Noise file present: ", os.path.isfile(f"{args.output_dir}/"+entry["name"]+"spec.fits.gz"))
         print("Noise or Noise file present: ", (entry["noise"] < 0.0 or os.path.isfile(f"{args.output_dir}/"+entry["name"]+"spec.fits.gz")))
         print("Nonoise file present + (Noise or Noise file present)", (os.path.isfile(f"{args.output_dir}/"+entry["name"]+"spec_nonoise.fits.gz") and (entry["noise"] < 0.0 or os.path.isfile(f"{args.output_dir}/"+entry["name"]+"spec.fits.gz"))))
