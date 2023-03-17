@@ -22,10 +22,6 @@ from utils import (
     run_simple_ray_fast
 )
 
-# set yt log level
-set_log_level_yt("error")
-ytcfg.update({"yt": {"suppress_stream_logging": True}})
-
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -167,6 +163,12 @@ def main(args):
     if args.num_processors == 0:
         args.num_processors = (multiprocessing.cpu_count() // 2)
     print("Running with nproc = ", args.num_processors)
+
+    # set yt log level
+    if not args.verbose:
+        set_log_level_yt("error")
+        ytcfg.update({"yt": {"suppress_stream_logging": True}})
+
     t0 = time.time()
 
     #################################
@@ -428,6 +430,10 @@ if __name__ == "__main__":
                         type=int,
                         default=458467463,
                         help='Seed for the random number generator')
+    parser.add_argument("--verbose",
+                        action="store_true",
+                        help="""If passed, then print all the info from yt and
+                            trident""")
     parser.add_argument("--z-dist",
                         type=str,
                         default=f"{THIS_DIR}/../Data/dr16_dla_ndz.txt",
