@@ -1119,6 +1119,7 @@ def run_simple_ray_fast(ds,
                         snapshot_name,
                         galaxy_pos,
                         base_name,
+                        output_dir,
                         noise):
     """Run a simple ray from a specified start and end shifts from the centre
     of a galaxy
@@ -1150,6 +1151,9 @@ def run_simple_ray_fast(ds,
     base_name: str
     Base name used to name the outputs
 
+    output_dir: str
+    Directory where outputs are saved
+
     noise: float
     The noise to be applied to the spectrum
     """
@@ -1177,7 +1181,11 @@ def run_simple_ray_fast(ds,
         ray,
         lines='all',
         store_observables=True)
-    spec_gen.save_spectrum(f"{base_name}spec_nonoise.fits.gz", format="FITS")
+    spec_gen.save_spectrum(
+        f"{output_dir}{base_name}spec_nonoise.fits.gz",
+        format="FITS")
     if noise > 0.0:
         spec_gen.add_gaussian_noise(noise)
-        spec_gen.save_spectrum(f"{base_name}spec.fits.gz", format="FITS")
+        spec_gen.save_spectrum(
+            f"{output_dir}{base_name}spec.fits.gz",
+            format="FITS")

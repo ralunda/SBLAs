@@ -28,7 +28,9 @@ def compute_rays(ds,
                  end_shift,
                  snapshot_name,
                  galaxy_pos,
-                 base_name):
+                 base_name,
+                 output_dir,
+                 noise):
     """Test function to replace run_simple_ray.
 
     Arguments
@@ -266,6 +268,7 @@ def main(args):
                     not_run_catalogue["snapshot_name"][pos],
                     galaxy_positions[pos],
                     not_run_catalogue["name"][pos],
+                    repeat(args.output_dir),
                     not_run_catalogue["noise"][pos])
 
                 if args.test:
@@ -303,7 +306,7 @@ def main(args):
         ndz = np.genfromtxt(args.z_dist, names=True, encoding="UTF-8")
         z_from_prob = interp1d(ndz["ndz_pdf"], ndz["z"])
         probs = np.random.uniform(0.0, 1.0, size=args.n_points)
-        z = z_from_prob(probs)
+        redshifts = z_from_prob(probs)
 
         # generate noise distributions
         if args.noise_dist is not None:
@@ -324,13 +327,25 @@ def main(args):
                                       galaxy_position_z]).transpose()
 
         # get the simulation names
-        names = np.array([f"{args.base_name}{i}" for i in np.arange(args.n_points)])
+        names = np.array([
+            f"{args.base_name}_{snapshot}_z{z}_x{xs}_{xe}_y{ys}_{ye}_z{zs}_{ze}"
+            for snapshot, z, xs, xe, ys, ye, zs, ze in zip(
+                snapshot_names,
+                redshifts,
+                x_start,
+                x_end,
+                y_start,
+                y_end,
+                z_start,
+                z_end,
+            )
+        ])
 
         # save catalogue
         catalogue = Table({
             "name": names,
             "snapshot_name": snapshot_names,
-            "z": z,
+            "z": redshifts,
             "rho": rho,
             "start_shift_x": x_start,
             "start_shift_y": y_start,
@@ -349,7 +364,7 @@ def main(args):
         print(f"INFO: Catalogue created. Eelapsed time: {(t1-t0)/60.0} minutes")
 
         # run the skewers in parallel
-        print("Running missing skewers")
+        print("Running skewers")
         for snapshot in np.unique(snapshot_names):
             if args.test:
                 ds = None
@@ -360,12 +375,13 @@ def main(args):
             with context.Pool(processes=args.num_processors) as pool:
                 arguments = zip(
                     repeat(ds),
-                    z[pos],
+                    redshifts[pos],
                     start_shifts[pos],
                     end_shifts[pos],
                     snapshot_names[pos],
                     galaxy_positions[pos],
                     names[pos],
+                    repeat(args.output_dir)
                     noise[pos])
 
                 if args.test:
@@ -412,8 +428,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--base-name",
                         type=str,
-                        default=f"{THIS_DIR}/simulations/GCAT/G_",
-                        help="Output catalogue filename. Extension should be csv")
+                        default=f"galaxy_",
+                        help="Base name for output files.")
     parser.add_argument("--catalogue-file",
                         type=str,
                         default=f"{THIS_DIR}/simulations/GCAT/G_catalog.csv",
@@ -439,6 +455,10 @@ if __name__ == "__main__":
                         default=0,
                         help="""Number of processors to use. If 0 use
                             multiprocessing.cpu_count() // 2)""")
+    parser.add_argument("--output-dir",
+                        type=str,
+                        required=True,
+                        help="""Output directory""")
     parser.add_argument("--rho-max",
                         type=float,
                         default=-1.0,
