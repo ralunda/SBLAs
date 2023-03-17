@@ -17,7 +17,7 @@ from yt.config import ytcfg
 from utils import (
     fit_lines,
     load_snapshot,
-    run_galaxy_snapshot_fast,
+    run_galaxy_snapshot,
     run_simple_ray,
     run_simple_ray_fast
 )
