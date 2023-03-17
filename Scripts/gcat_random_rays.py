@@ -10,7 +10,6 @@ import numpy as np
 from scipy.interpolate import interp1d
 from astropy.table import Table
 import time
-import logging
 
 from utils import (
     fit_lines,
@@ -20,7 +19,6 @@ from utils import (
     run_simple_ray_fast
 )
 
-logging.set_level(logging.ERROR)
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
