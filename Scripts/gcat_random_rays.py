@@ -279,7 +279,7 @@ def main(args):
         # get the simulation names
         names = np.array([
             (f"{args.base_name}_{snapshot}_z{z:.4f}_x{xs:.4f}_{xe:.4f}_"
-             "y{ys:.4f}_{ye:.4f}_z{zs:.4f}_{ze:.4f}")
+             f"y{ys:.4f}_{ye:.4f}_z{zs:.4f}_{ze:.4f}")
             for snapshot, z, xs, xe, ys, ye, zs, ze in zip(
                 snapshot_names,
                 redshifts,
