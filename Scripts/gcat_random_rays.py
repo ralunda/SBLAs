@@ -17,8 +17,6 @@ from yt.config import ytcfg
 from utils import (
     fit_lines,
     load_snapshot,
-    run_galaxy_snapshot,
-    run_simple_ray,
     run_simple_ray_fast
 )
 
@@ -325,7 +323,7 @@ def main(args):
                                  names[pos],
                                  repeat(args.output_dir),
                                  noise[pos]):
-                run_simple_ray(*arguments)
+                run_simple_ray_fast(*arguments)
 
 
         t2 = time.time()
