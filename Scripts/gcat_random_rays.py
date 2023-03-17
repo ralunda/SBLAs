@@ -22,52 +22,6 @@ from utils import (
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def compute_rays(ds,
-                 z,
-                 start_shift,
-                 end_shift,
-                 snapshot_name,
-                 galaxy_pos,
-                 base_name,
-                 output_dir,
-                 noise):
-    """Test function to replace run_simple_ray.
-
-    Arguments
-    ---------
-    ds: ?
-    The loaded snapshot
-
-    z: float
-    The redshift of the ray
-
-    start_shift: float, array
-    Shift of the starting point of the ray with respect to the galaxy centre
-    If a float, all 3 dimensions are equally shifted.
-    If an array, it must have size=3 and each dimension will be shifted independently
-
-    end_shift: float, array
-    Shift of the ending point of the ray with respect to the galaxy centre.
-    If a float, all 3 dimensions are equally shifted.
-    If an array, it must have size=3 and each dimension will be shifted independently.
-
-    snapshot_name: str
-    Name of the snapshot used (e.g. "RD0196")
-
-    galaxy: array
-    3D position of the galaxy in the snapshot
-
-    base_name: str
-    Base name used to name the outputs
-    """
-    name = base_name.split("/")[-1]
-    return (
-        f"{name}; {snapshot_name}; {z}; "
-        f"{start_shift[0]}; {start_shift[1]}; {start_shift[2]}; "
-        f"{end_shift[0]}; {end_shift[1]}; {end_shift[2]}; "
-        f"{0.0}; {0.0}; {0.0}\n"
-    )
-
 
 def generate_ray(rho, theta_e, theta_r, phi_r, radius):
     """Function to compute the starting and ending points of a ray
@@ -271,10 +225,7 @@ def main(args):
                     repeat(args.output_dir),
                     not_run_catalogue["noise"][pos])
 
-                if args.test:
-                    pool.starmap(compute_rays, arguments)
-                else:
-                    pool.starmap(run_simple_ray_fast, arguments)
+                pool.starmap(run_simple_ray_fast, arguments)
 
         t2 = time.time()
         print(f"INFO: Run {len(not_run_catalogue)} skewers. Eelapsed time: {(t2-t1)/60.0} minutes")
@@ -384,10 +335,7 @@ def main(args):
                     repeat(args.output_dir)
                     noise[pos])
 
-                if args.test:
-                    pool.starmap(compute_rays, arguments)
-                else:
-                    pool.starmap(run_simple_ray_fast, arguments)
+                pool.starmap(run_simple_ray_fast, arguments)
 
         t2 = time.time()
         print(f"INFO: Run {len(catalogue)} skewers. Eelapsed time: {(t2-t1)/60.0} minutes")
@@ -476,9 +424,6 @@ if __name__ == "__main__":
                         type=int,
                         default=458467463,
                         help='Seed for the random number generator')
-    parser.add_argument("--test",
-                        action="store_true",
-                        help='Use the test function instead of run_simple_ray')
     parser.add_argument("--z-dist",
                         type=str,
                         default=f"{THIS_DIR}/../Data/dr16_dla_ndz.txt",
