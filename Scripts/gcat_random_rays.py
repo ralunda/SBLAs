@@ -173,7 +173,7 @@ def main(args):
         print("Continuing with exisiting run")
         print("Loading catalogue")
         # load catalogue
-        catalogue = Table.read(args.catalogue_file)
+        catalogue = Table.read(f"{args.output_dir}/{args.catalogue_file}")
 
         not_run_mask = np.zeros(len(catalogue), dtype=bool)
         for index, entry in enumerate(catalogue["name"]):
@@ -308,7 +308,7 @@ def main(args):
             "gal_pos_z": galaxy_position_z,
             "noise": noise,
         })
-        catalogue.write(args.catalogue_file)
+        catalogue.write(f"{args.output_dir}/{args.catalogue_file}")
 
         t1 = time.time()
         print(f"INFO: Catalogue created. Eelapsed time: {(t1-t0)/60.0} minutes")
