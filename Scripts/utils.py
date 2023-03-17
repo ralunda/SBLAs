@@ -1173,6 +1173,7 @@ def run_simple_ray_fast(ds,
         redshift=z,
         lines='all',
         fields=['density', 'temperature', 'metallicity'],
+        data_filename=f"{output_dir}{base_name}_ray.h5"
         )
     spec_gen = trident.SpectrumGenerator(
         lambda_min= 3000,
