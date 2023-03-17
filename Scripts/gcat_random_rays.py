@@ -191,6 +191,7 @@ def main(args):
             for entry in catalogue
         ])
         not_run_catalogue = catalogue[not_run_mask]
+        print(f"{len(not_run_catalogue)} skewers were not previously run")
 
         # prepare variables to run
         snapshot_names = not_run_catalogue["snapshot_name"]
