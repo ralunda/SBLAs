@@ -8,8 +8,6 @@ import math
 import h5py
 import numpy as np
 
-# make sure yt can run in parallel
-yt.enable_parallelism()
 
 # some configuration variables used by run_simple_ray
 Z_Solar = 0.02041

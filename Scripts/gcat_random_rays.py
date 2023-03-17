@@ -334,6 +334,9 @@ def main(args):
 
                 pool.starmap(run_simple_ray_fast, arguments)
 
+                pool.close()
+                pool.join()
+
         t2 = time.time()
         print(f"INFO: Run {len(catalogue)} skewers. Eelapsed time: {(t2-t1)/60.0} minutes")
 
