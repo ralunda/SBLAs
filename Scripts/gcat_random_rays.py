@@ -206,10 +206,7 @@ def main(args):
         # run the missing skewers in parallel
         print("Running missing skewers")
         for snapshot in np.unique(not_run_catalogue["snapshot_name"]):
-            if args.test:
-                ds = None
-            else:
-                ds = load_snapshot(snapshot, args.snapshots_dir)
+            ds = load_snapshot(snapshot, args.snapshots_dir)
             pos = np.where(not_run_catalogue["snapshot_name"] == snapshot)
 
             context = multiprocessing.get_context('fork')
@@ -263,9 +260,9 @@ def main(args):
         if args.noise_dist is not None:
             # TODO: draw noises
             # This needs to be replaced
-            noise = np.zeros_like(z) -1.0
+            noise = np.zeros_like(redshifts) -1.0
         else:
-            noise = np.zeros_like(z) -1.0
+            noise = np.zeros_like(redshifts) -1.0
 
         # choose snapshots
         choices = [select_snapshot(z_aux, rho_aux, snapshots) for z_aux, rho_aux in zip(z, rho)]
@@ -317,10 +314,7 @@ def main(args):
         # run the skewers in parallel
         print("Running skewers")
         for snapshot in np.unique(snapshot_names):
-            if args.test:
-                ds = None
-            else:
-                ds = load_snapshot(snapshot, args.snapshots_dir)
+            ds = load_snapshot(snapshot, args.snapshots_dir)
             pos = np.where(snapshot_names == snapshot)
             context = multiprocessing.get_context('fork')
             with context.Pool(processes=args.num_processors) as pool:
