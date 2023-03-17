@@ -1185,10 +1185,10 @@ def run_simple_ray_fast(ds,
         lines='all',
         store_observables=True)
     spec_gen.save_spectrum(
-        f"{output_dir}{base_name}spec_nonoise.fits.gz",
+        f"{output_dir}{base_name}_spec_nonoise.fits.gz",
         format="FITS")
     if noise > 0.0:
         spec_gen.add_gaussian_noise(noise)
         spec_gen.save_spectrum(
-            f"{output_dir}{base_name}spec.fits.gz",
+            f"{output_dir}{base_name}_spec.fits.gz",
             format="FITS")
