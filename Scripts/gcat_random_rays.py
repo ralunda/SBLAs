@@ -186,8 +186,7 @@ def main(args):
 
         # select the entries that were not previously run
         not_run_mask = np.array([
-            not (os.path.isfile(entry["name"]+"spec_nonoise.fits.gz") and
-            (entry["noise"] < 0.0 or os.path.isfile(entry["name"]+"spec.fits.gz")))
+            not (os.path.isfile(f"{args.output_dir}/"+entry["name"]+"spec_nonoise.fits.gz") and (entry["noise"] < 0.0 or os.path.isfile(f"{args.output_dir}/"+entry["name"]+"spec.fits.gz")))
             for entry in catalogue
         ])
         not_run_catalogue = catalogue[not_run_mask]
