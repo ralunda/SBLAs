@@ -11,6 +11,9 @@ from scipy.interpolate import interp1d
 from astropy.table import Table
 import time
 
+from yt.utilities.logger import set_log_level as set_log_level_yt
+from yt.config import ytcfg
+
 from utils import (
     fit_lines,
     load_snapshot,
@@ -18,7 +21,6 @@ from utils import (
     run_simple_ray,
     run_simple_ray_fast
 )
-
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -158,6 +160,11 @@ def main(args):
     args: argparse.Namespace
     Parsed arguments (parser at the bottom of the file).
     """
+    # set yt log level
+    if not args.verbose:
+        set_log_level_yt("error")
+        ytcfg.update({"yt": {"suppress_stream_logging": True}})
+
     t0 = time.time()
 
     #################################
@@ -215,7 +222,7 @@ def main(args):
                 run_simple_ray_fast(*arguments)
 
         t2 = time.time()
-        print(f"INFO: Run {len(not_run_catalogue)} skewers. Eelapsed time: {(t2-t1)/60.0} minutes")
+        print(f"INFO: Run {len(not_run_catalogue)} skewers. lapsed time: {(t2-t1)/60.0} minutes")
 
     ####################################
     # new run:                         #
@@ -321,8 +328,8 @@ def main(args):
                 run_simple_ray(*arguments)
 
 
-    t2 = time.time()
-    print(f"INFO: Run {len(catalogue)} skewers. Elapsed time: {(t2-t1)/60.0} minutes")
+        t2 = time.time()
+        print(f"INFO: Run {len(catalogue)} skewers. Elapsed time: {(t2-t1)/60.0} minutes")
 
     print("Fitting profiles")
     t3 = time.time()
@@ -399,6 +406,10 @@ if __name__ == "__main__":
                         type=int,
                         default=458467463,
                         help='Seed for the random number generator')
+    parser.add_argument("--verbose",
+                        action="store_true",
+                        help="""If passed, then print all the info from yt and
+                            trident""")
     parser.add_argument("--z-dist",
                         type=str,
                         default=f"{THIS_DIR}/../Data/dr16_dla_ndz.txt",
