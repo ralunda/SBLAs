@@ -11,7 +11,6 @@ from scipy.interpolate import interp1d
 from astropy.table import Table
 import time
 
-
 from utils import (
     fit_lines,
     load_snapshot,
@@ -20,51 +19,8 @@ from utils import (
     run_simple_ray_fast
 )
 
+
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-
-def compute_rays(ds,
-                 z,
-                 start_shift,
-                 end_shift,
-                 snapshot_name,
-                 galaxy_pos,
-                 base_name):
-    """Test function to replace run_simple_ray.
-
-    Arguments
-    ---------
-    ds: ?
-    The loaded snapshot
-
-    z: float
-    The redshift of the ray
-
-    start_shift: float, array
-    Shift of the starting point of the ray with respect to the galaxy centre
-    If a float, all 3 dimensions are equally shifted.
-    If an array, it must have size=3 and each dimension will be shifted independently
-
-    end_shift: float, array
-    Shift of the ending point of the ray with respect to the galaxy centre.
-    If a float, all 3 dimensions are equally shifted.
-    If an array, it must have size=3 and each dimension will be shifted independently.
-
-    snapshot_name: str
-    Name of the snapshot used (e.g. "RD0196")
-
-    galaxy: array
-    3D position of the galaxy in the snapshot
-
-    base_name: str
-    Base name used to name the outputs
-    """
-    name = base_name.split("/")[-1]
-    return (
-        f"{name}; {snapshot_name}; {z}; "
-        f"{start_shift[0]}; {start_shift[1]}; {start_shift[2]}; "
-        f"{end_shift[0]}; {end_shift[1]}; {end_shift[2]}; "
-        f"{0.0}; {0.0}; {0.0}\n"
-    )
 
 
 def generate_ray(rho, theta_e, theta_r, phi_r, radius):
@@ -217,7 +173,7 @@ def main(args):
         print("Continuing with exisiting run")
         print("Loading catalogue")
         # load catalogue
-        catalogue = Table.read(args.catalogue_file)
+        catalogue = Table.read(f"{args.output_dir}/{args.catalogue_file}")
 
         not_run_mask = np.zeros(len(catalogue), dtype=bool)
         for index, entry in enumerate(catalogue["name"]):
@@ -250,10 +206,7 @@ def main(args):
         # run the missing skewers in parallel
         print("Running missing skewers")
         for snapshot in np.unique(not_run_catalogue["snapshot_name"]):
-            if args.test:
-                ds = None
-            else:
-                ds = load_snapshot(snapshot, args.snapshots_dir)
+            ds = load_snapshot(snapshot, args.snapshots_dir)
             pos = np.where(not_run_catalogue["snapshot_name"] == snapshot)
 
             context = multiprocessing.get_context('fork')
@@ -266,12 +219,10 @@ def main(args):
                     not_run_catalogue["snapshot_name"][pos],
                     galaxy_positions[pos],
                     not_run_catalogue["name"][pos],
+                    repeat(args.output_dir),
                     not_run_catalogue["noise"][pos])
 
-                if args.test:
-                    pool.starmap(compute_rays, arguments)
-                else:
-                    pool.starmap(run_simple_ray_fast, arguments)
+                pool.starmap(run_simple_ray_fast, arguments)
 
         t2 = time.time()
         print(f"INFO: Run {len(not_run_catalogue)} skewers. Eelapsed time: {(t2-t1)/60.0} minutes")
@@ -303,18 +254,20 @@ def main(args):
         ndz = np.genfromtxt(args.z_dist, names=True, encoding="UTF-8")
         z_from_prob = interp1d(ndz["ndz_pdf"], ndz["z"])
         probs = np.random.uniform(0.0, 1.0, size=args.n_points)
-        z = z_from_prob(probs)
+        redshifts = z_from_prob(probs)
 
         # generate noise distributions
         if args.noise_dist is not None:
             # TODO: draw noises
             # This needs to be replaced
-            noise = np.zeros_like(z) -1.0
+            noise = np.zeros_like(redshifts) -1.0
         else:
-            noise = np.zeros_like(z) -1.0
+            noise = np.zeros_like(redshifts) -1.0
 
         # choose snapshots
-        choices = [select_snapshot(z_aux, rho_aux, snapshots) for z_aux, rho_aux in zip(z, rho)]
+        choices = [
+            select_snapshot(z_aux, rho_aux, snapshots)
+            for z_aux, rho_aux in zip(redshifts, rho)]
         snapshot_names = snapshots["name"][choices]
         galaxy_position_x = snapshots["galaxy_pos_x"][choices]
         galaxy_position_y = snapshots["galaxy_pos_y"][choices]
@@ -324,13 +277,26 @@ def main(args):
                                       galaxy_position_z]).transpose()
 
         # get the simulation names
-        names = np.array([f"{args.base_name}{i}" for i in np.arange(args.n_points)])
+        names = np.array([
+            (f"{args.base_name}_{snapshot}_z{z:.4f}_x{xs:.4f}_{xe:.4f}_"
+             f"y{ys:.4f}_{ye:.4f}_z{zs:.4f}_{ze:.4f}")
+            for snapshot, z, xs, xe, ys, ye, zs, ze in zip(
+                snapshot_names,
+                redshifts,
+                x_start,
+                x_end,
+                y_start,
+                y_end,
+                z_start,
+                z_end,
+            )
+        ])
 
         # save catalogue
         catalogue = Table({
             "name": names,
             "snapshot_name": snapshot_names,
-            "z": z,
+            "z": redshifts,
             "rho": rho,
             "start_shift_x": x_start,
             "start_shift_y": y_start,
@@ -343,35 +309,31 @@ def main(args):
             "gal_pos_z": galaxy_position_z,
             "noise": noise,
         })
-        catalogue.write(args.catalogue_file)
+        catalogue.write(f"{args.output_dir}/{args.catalogue_file}")
 
         t1 = time.time()
         print(f"INFO: Catalogue created. Eelapsed time: {(t1-t0)/60.0} minutes")
 
         # run the skewers in parallel
-        print("Running missing skewers")
+        print("Running skewers")
         for snapshot in np.unique(snapshot_names):
-            if args.test:
-                ds = None
-            else:
-                ds = load_snapshot(snapshot, args.snapshots_dir)
+            ds = load_snapshot(snapshot, args.snapshots_dir)
             pos = np.where(snapshot_names == snapshot)
             context = multiprocessing.get_context('fork')
             with context.Pool(processes=args.num_processors) as pool:
                 arguments = zip(
                     repeat(ds),
-                    z[pos],
+                    redshifts[pos],
                     start_shifts[pos],
                     end_shifts[pos],
                     snapshot_names[pos],
                     galaxy_positions[pos],
                     names[pos],
+                    repeat(args.output_dir),
                     noise[pos])
 
-                if args.test:
-                    pool.starmap(compute_rays, arguments)
-                else:
-                    pool.starmap(run_simple_ray_fast, arguments)
+                pool.starmap(run_simple_ray_fast, arguments)
+
 
         t2 = time.time()
         print(f"INFO: Run {len(catalogue)} skewers. Eelapsed time: {(t2-t1)/60.0} minutes")
@@ -412,8 +374,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--base-name",
                         type=str,
-                        default=f"{THIS_DIR}/simulations/GCAT/G_",
-                        help="Output catalogue filename. Extension should be csv")
+                        default=f"galaxy_",
+                        help="Base name for output files.")
     parser.add_argument("--catalogue-file",
                         type=str,
                         default=f"{THIS_DIR}/simulations/GCAT/G_catalog.csv",
@@ -439,6 +401,10 @@ if __name__ == "__main__":
                         default=0,
                         help="""Number of processors to use. If 0 use
                             multiprocessing.cpu_count() // 2)""")
+    parser.add_argument("--output-dir",
+                        type=str,
+                        required=True,
+                        help="""Output directory""")
     parser.add_argument("--rho-max",
                         type=float,
                         default=-1.0,
@@ -456,9 +422,6 @@ if __name__ == "__main__":
                         type=int,
                         default=458467463,
                         help='Seed for the random number generator')
-    parser.add_argument("--test",
-                        action="store_true",
-                        help='Use the test function instead of run_simple_ray')
     parser.add_argument("--z-dist",
                         type=str,
                         default=f"{THIS_DIR}/../Data/dr16_dla_ndz.txt",
