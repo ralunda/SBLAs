@@ -332,7 +332,7 @@ def main(args):
                     snapshot_names[pos],
                     galaxy_positions[pos],
                     names[pos],
-                    repeat(args.output_dir)
+                    repeat(args.output_dir),
                     noise[pos])
 
                 pool.starmap(run_simple_ray_fast, arguments)
