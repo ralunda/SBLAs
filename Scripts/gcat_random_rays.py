@@ -228,7 +228,8 @@ def main(args):
         # load snapshots info
         snapshots = np.genfromtxt(args.snapshots, names=True, dtype=None, encoding="UTF-8")
         if args.rho_max < 0:
-            args.rho_max = np.max(snapshots["rho_max"])
+            args.rho_max = np.amax(snapshots["rho_max"])
+        snapshots_zmax = np.amax(snapshots["z_max"])
 
         # generate random list of starting and ending points for the rays
         rho = args.rho_max * np.random.uniform(0, 1, size=args.n_points)**(1/3)
@@ -245,6 +246,17 @@ def main(args):
         z_from_prob = interp1d(ndz["ndz_pdf"], ndz["z"])
         probs = np.random.uniform(0.0, 1.0, size=args.n_points)
         redshifts = z_from_prob(probs)
+        pos = np.where(redshifts > snapshots_zmax)
+        while pos[0].size > 0:
+            print(
+                f"WARNING: {pos[0].size} of the selected redshifts are higher "
+                "than the largest snaphot redshift. I will now reassign these "
+                "redshifs. This means the redshift distribution will be trimmed. "
+                "Consider adding snapshots at larger redshifts or changing the "
+                "input redshift distribution")
+            probs = np.random.uniform(0.0, 1.0, size=pos[0].size)
+            redshifts[pos] = z_from_prob(probs)
+            pos = np.where(redshifts > snapshots_zmax)
 
         # generate noise distributions
         if args.noise_dist is not None:
@@ -353,7 +365,7 @@ def main(args):
             catalogue.write(args.catalogue_file)
 
     t3_1 = time.time()
-    print(f"INFO: Fits done. Eelapsed time: {(t3_1-t3_0)/60.0} minutes")
+    print(f"INFO: Fits done. Elapsed time: {(t3_1-t3_0)/60.0} minutes")
 
     t0_1 = time.time()
     print(f"INFO: total elapsed time: {(t0_1-t0_0)/60.0} minutes")
