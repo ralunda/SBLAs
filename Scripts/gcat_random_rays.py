@@ -365,7 +365,7 @@ def main(args):
             catalogue.write(args.catalogue_file)
 
     t3_1 = time.time()
-    print(f"INFO: Fits done. Eelapsed time: {(t3_1-t3_0)/60.0} minutes")
+    print(f"INFO: Fits done. Elapsed time: {(t3_1-t3_0)/60.0} minutes")
 
     t0_1 = time.time()
     print(f"INFO: total elapsed time: {(t0_1-t0_0)/60.0} minutes")
