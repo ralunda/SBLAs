@@ -247,15 +247,16 @@ def main(args):
         probs = np.random.uniform(0.0, 1.0, size=args.n_points)
         redshifts = z_from_prob(probs)
         pos = np.where(redshifts > snapshots_zmax)
-        if pos[0].size > 0:
+        while pos[0].size > 0:
             print(
-                "The maximum redshift for the specified snapshots is "
-                f"{snapshots_zmax}")
-            print(
-                f"Of all the {redshifts.size} selected redshifts, I found the "
-                "following redshifts above the mentioned maximum: "
-                " ".join([str(z) for z in redshifts[pos]]))
-            print("This is probably going to cause an error")
+                f"WARNING: {pos[0].size} of the selected redshifts are higher "
+                "than the largest snaphot redshift. I will now reassign these "
+                "redshifs. This means the redshift distribution will be trimmed. "
+                "Consider adding snapshots at larger redshifts or changing the "
+                "input redshift distribution")
+            probs = np.random.uniform(0.0, 1.0, size=pos[0].size)
+            redshifts[pos] = z_from_prob(probs)
+            pos = np.where(redshifts > snapshots_zmax)
 
         # generate noise distributions
         if args.noise_dist is not None:
