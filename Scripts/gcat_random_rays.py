@@ -228,7 +228,8 @@ def main(args):
         # load snapshots info
         snapshots = np.genfromtxt(args.snapshots, names=True, dtype=None, encoding="UTF-8")
         if args.rho_max < 0:
-            args.rho_max = np.max(snapshots["rho_max"])
+            args.rho_max = np.amax(snapshots["rho_max"])
+        snapshots_zmax = np.amax(snapshots["z_max"])
 
         # generate random list of starting and ending points for the rays
         rho = args.rho_max * np.random.uniform(0, 1, size=args.n_points)**(1/3)
@@ -245,6 +246,16 @@ def main(args):
         z_from_prob = interp1d(ndz["ndz_pdf"], ndz["z"])
         probs = np.random.uniform(0.0, 1.0, size=args.n_points)
         redshifts = z_from_prob(probs)
+        pos = np.where(redshifts > snapshots_zmax)
+        if pos[0].size > 0:
+            print(
+                "The maximum redshift for the specified snapshots is "
+                f"{snapshots_zmax}")
+            print(
+                f"Of all the {redshifts.size} selected redshifts, I found the "
+                "following redshifts above the mentioned maximum: "
+                " ".join([str(z) for z in redshifts[pos]]))
+            print("This is probably going to cause an error")
 
         # generate noise distributions
         if args.noise_dist is not None:
