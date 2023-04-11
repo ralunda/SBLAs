@@ -128,13 +128,13 @@ def rotate(x, y, z, theta, phi):
 
     return x2, y2, z2
 
-def find_rho_max(z, snapshots):
+def find_rho_max(redshifs, snapshots):
     """Find the maximum rho at a given redshift for the specified snapshots
 
     Arguments
     ---------
-    z: float
-    Chosen redshift
+    redshif: array of float
+    Chosen redshifts
 
     snapshots: np.structured_array
     A named array with the snapshots information. Must contain fields "name",
@@ -146,17 +146,17 @@ def find_rho_max(z, snapshots):
     The maximum rho
     """
     rho_max = np.zeros_like(z)
-    for index, z_value in enumerate(z):
-        pos = np.argwhere((snapshots["z_max"] > z_value))
+    for index, redshif in enumerate(redshifs):
+        pos = np.argwhere((snapshots["z_max"] > redshif))
         rho_max[index] = np.max(snapshots["rho_max"][pos])
     return rho_max
 
-def select_snapshot(z, rho, snapshots):
+def select_snapshot(redshif, rho, snapshots):
     """Randomly select a snapshot given a choice of z and distance
 
     Arguments
     ---------
-    z: float
+    redshif: float
     Chosen redshift
 
     rho: float
@@ -171,7 +171,7 @@ def select_snapshot(z, rho, snapshots):
     choice: str
     The position of the chosen
     """
-    pos = np.argwhere((snapshots["rho_max"] > rho) & (snapshots["z_max"] > z))
+    pos = np.argwhere((snapshots["rho_max"] > rho) & (snapshots["z_max"] > redshif))
     choice = np.random.choice(pos.reshape(pos.shape[0]))
     return choice
 
