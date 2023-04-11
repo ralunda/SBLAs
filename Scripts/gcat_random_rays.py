@@ -270,7 +270,7 @@ def main(args):
             pos = np.where(redshifts > snapshots_zmax)
 
         # generate random list of starting and ending points for the rays
-        snapshots_rho_max = find_rho_max(z, snapshots)
+        snapshots_rho_max = find_rho_max(redshifts, snapshots)
         rho = snapshots_rho_max * np.random.uniform(0, 1, size=args.n_points)**(1/3)
         theta_e = np.random.uniform(0, 2*np.pi, size=args.n_points)
         theta_r = np.random.uniform(0, 2*np.pi, size=args.n_points)
