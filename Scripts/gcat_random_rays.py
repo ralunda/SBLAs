@@ -147,7 +147,7 @@ def find_rho_max(z, snapshots):
     """
     rho_max = np.zeros_like(z)
     for index, z_value in enumerate(z):
-        pos = np.argwhere((snapshots["z_max"] > z))
+        pos = np.argwhere((snapshots["z_max"] > z_value))
         rho_max[index] = np.max(snapshots["rho_max"][pos])
     return rho_max
 
