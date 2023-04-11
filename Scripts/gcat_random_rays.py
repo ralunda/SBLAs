@@ -145,7 +145,7 @@ def find_rho_max(redshifs, snapshots):
     rho_max: array of float
     The maximum rho
     """
-    rho_max = np.zeros_like(z)
+    rho_max = np.zeros_like(redshifs)
     for index, redshif in enumerate(redshifs):
         pos = np.argwhere((snapshots["z_max"] > redshif))
         rho_max[index] = np.max(snapshots["rho_max"][pos])
