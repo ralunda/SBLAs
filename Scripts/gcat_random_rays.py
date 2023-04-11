@@ -276,7 +276,7 @@ def main(args):
         theta_r = np.random.uniform(0, 2*np.pi, size=args.n_points)
         phi_r = np.random.uniform(-np.pi, np.pi, size=args.n_points)
         x_start, y_start, z_start, x_end, y_end, z_end = generate_ray(
-            rho, theta_e, theta_r, phi_r, 3*args.rho_max)
+            rho, theta_e, theta_r, phi_r, 3*snapshots_rho_max)
         start_shifts = np.vstack([x_start, y_start, z_start]).transpose()
         end_shifts = np.vstack([x_end, y_end, z_end]).transpose()
 
