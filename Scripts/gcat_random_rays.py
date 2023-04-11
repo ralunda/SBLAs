@@ -128,6 +128,29 @@ def rotate(x, y, z, theta, phi):
 
     return x2, y2, z2
 
+def find_rho_max(z, snapshots):
+    """Find the maximum rho at a given redshift for the specified snapshots
+
+    Arguments
+    ---------
+    z: float
+    Chosen redshift
+
+    snapshots: np.structured_array
+    A named array with the snapshots information. Must contain fields "name",
+    "rho_max" and "z_max"
+
+    Return
+    ------
+    rho_max: array of float
+    The maximum rho
+    """
+    rho_max = np.zeros_like(z)
+    for index, z_value in enumerate(z):
+        pos = np.argwhere((snapshots["z_max"] > z))
+        rho_max[index] = np.max(snapshots["rho_max"][pos])
+    return rho_max
+
 def select_snapshot(z, rho, snapshots):
     """Randomly select a snapshot given a choice of z and distance
 
@@ -227,19 +250,7 @@ def main(args):
 
         # load snapshots info
         snapshots = np.genfromtxt(args.snapshots, names=True, dtype=None, encoding="UTF-8")
-        if args.rho_max < 0:
-            args.rho_max = np.amax(snapshots["rho_max"])
         snapshots_zmax = np.amax(snapshots["z_max"])
-
-        # generate random list of starting and ending points for the rays
-        rho = args.rho_max * np.random.uniform(0, 1, size=args.n_points)**(1/3)
-        theta_e = np.random.uniform(0, 2*np.pi, size=args.n_points)
-        theta_r = np.random.uniform(0, 2*np.pi, size=args.n_points)
-        phi_r = np.random.uniform(-np.pi, np.pi, size=args.n_points)
-        x_start, y_start, z_start, x_end, y_end, z_end = generate_ray(
-            rho, theta_e, theta_r, phi_r, 3*args.rho_max)
-        start_shifts = np.vstack([x_start, y_start, z_start]).transpose()
-        end_shifts = np.vstack([x_end, y_end, z_end]).transpose()
 
         # generate redshift distributions
         ndz = np.genfromtxt(args.z_dist, names=True, encoding="UTF-8")
@@ -257,6 +268,17 @@ def main(args):
             probs = np.random.uniform(0.0, 1.0, size=pos[0].size)
             redshifts[pos] = z_from_prob(probs)
             pos = np.where(redshifts > snapshots_zmax)
+
+        # generate random list of starting and ending points for the rays
+        snapshots_rho_max = find_rho_max(z, snapshots)
+        rho = snapshots_rho_max * np.random.uniform(0, 1, size=args.n_points)**(1/3)
+        theta_e = np.random.uniform(0, 2*np.pi, size=args.n_points)
+        theta_r = np.random.uniform(0, 2*np.pi, size=args.n_points)
+        phi_r = np.random.uniform(-np.pi, np.pi, size=args.n_points)
+        x_start, y_start, z_start, x_end, y_end, z_end = generate_ray(
+            rho, theta_e, theta_r, phi_r, 3*args.rho_max)
+        start_shifts = np.vstack([x_start, y_start, z_start]).transpose()
+        end_shifts = np.vstack([x_end, y_end, z_end]).transpose()
 
         # generate noise distributions
         if args.noise_dist is not None:
@@ -409,11 +431,6 @@ if __name__ == "__main__":
                         type=str,
                         required=True,
                         help="""Output directory""")
-    parser.add_argument("--rho-max",
-                        type=float,
-                        default=-1.0,
-                        help="""Maximum distance to probe (in kpc). If negative,
-                            infer from --snapshots""")
     parser.add_argument("--snapshots",
                         type=str,
                         default=f"{THIS_DIR}/../Data/snapshots.txt",
