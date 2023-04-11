@@ -30,39 +30,39 @@ def generate_ray(rho, theta_e, theta_r, phi_r, radius):
 
     Arguments
     ---------
-    rho: float
+    rho: array of float
     Distance between the ray and the centre of the galaxy
 
-    theta_e: float
+    theta_e: array of float
     Angle within the cone of possible rays
 
-    theta_r: float
+    theta_r: array of float
     Rotatiom angle theta for the starting and ending points
 
-    phi_r: float
+    phi_r: array of float
     Rotation angle phi for the starting and ending points
 
-    radius: float
+    radius: array of float
     Radius of the sphere including the starting and ending point
 
     Return
     ------
-    x_start: float
+    x_start: array of float
     x coordinate of the starting point
 
-    y_start: float
+    y_start: array of float
     y coordinate of the starting point
 
-    z_start: float
+    z_start: array of float
     z coordinate of the starting point
 
-    x_end: float
+    x_end: array of float
     x coordinate of the ending point
 
-    y_end: float
+    y_end: array of float
     y coordinate of the ending point
 
-    z_end: float
+    z_end: array of float
     z coordinate of the ending point
     """
     # ray start
