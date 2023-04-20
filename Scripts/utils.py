@@ -664,7 +664,7 @@ orderFits = ['FeII','CaX','ArVII','ArII','ArI','SXIV','SVI','SV','SIV','SIII','S
 
 
 
-def fit_lines(base_name, input_extension=".h5", save_fit=False):
+def fit_lines(base_name, input_extension, save_fit):
     """Fit line profiles in the spectrum
 
     Arguments
@@ -676,7 +676,7 @@ def fit_lines(base_name, input_extension=".h5", save_fit=False):
     Extension of the file containing the spectra. Valid extensions are
     ".h5" or ".txt"
 
-    save_fit:
+    save_fit: bool
     Save the fit results in an h5 file called "{base_name}HIspecFIT.h5"
 
     Return

@@ -377,6 +377,7 @@ def main(args):
             arguments = zip(
                 names,
                 repeat(".txt"),
+                repeat(False)
             )
 
             print("Here")
