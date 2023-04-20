@@ -690,6 +690,7 @@ def fit_lines(base_name, input_extension=".h5", save_fit=False):
     zfit: float
     The fitted redshift
     """
+    print("I am the function you're looking for")
     # load arrays
     if input_extension == ".h5":
         file = h5py.File(f"{base_name}spec.h5")
