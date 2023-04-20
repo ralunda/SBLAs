@@ -386,7 +386,6 @@ def main(args):
                 dtype=[("N [cm^-2]", float), ("b [km/s]", float), ("zfit", float)]
             )
 
-            print(imap_it)
             print(fit_results_list)
             print(fit_results_list[0])
             print(fit_results_list[:])
