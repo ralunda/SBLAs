@@ -378,13 +378,12 @@ def main(args):
         with context.Pool(processes=args.num_processors) as pool:
             arguments = zip(
                 catalogue["name"],
-                repeat(".h5"),
+                repeat(".fits.gz"),
                 repeat(False),
                 catalogue["noise"]
             )
 
             print("Here")
-            test = fit_lines(catalogue["name"][0], ".txt", False, -1.0)
             print(test)
             fit_results_list = pool.starmap(fit_lines, arguments)
             print("There")
