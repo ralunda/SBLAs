@@ -703,7 +703,8 @@ def fit_lines(base_name, input_extension=".h5", save_fit=False):
         # TODO: read data from txt file
         return 0, 0, 0
     else:
-        raise Exception("Loading from other than .h5 not implemented")
+        print("Loading from other than .h5 not implemented")
+        return 0, 0, 0
 
     # do actual fit
     if save_fit:

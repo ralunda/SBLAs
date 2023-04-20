@@ -379,8 +379,7 @@ def main(args):
                 repeat(".txt"),
             )
 
-            imap_it = pool.starmap(fit_lines, arguments)
-            fit_results_list = [item for item in imap_it]
+            fit_results_list = pool.starmap(fit_lines, arguments)
 
             fit_results = np.array(
                 fit_results_list,
