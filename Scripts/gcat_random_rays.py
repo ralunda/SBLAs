@@ -384,7 +384,6 @@ def main(args):
             )
 
             print("Here")
-            print(test)
             fit_results_list = pool.starmap(fit_lines, arguments)
             print("There")
 
