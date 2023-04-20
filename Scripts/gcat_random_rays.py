@@ -380,7 +380,13 @@ def main(args):
             )
 
             imap_it = pool.starmap(fit_lines, arguments)
-            fit_results = [item for item in imap_it]
+            fit_results = np.array(
+                [item for item in imap_it],
+                dtype=[("N [cm^-2]", float), ("b [km/s]", float), ("zfit", float)]
+
+            print(fit_results[0])
+            print(fit_results[:])
+            print(fit_results[:][0])
 
             # update catalogue
             catalogue["N [cm^-2]"] = fit_results[:][0]
