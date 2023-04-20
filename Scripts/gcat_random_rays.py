@@ -372,6 +372,9 @@ def main(args):
         print("Fitting profiles")
         t3_0 = time.time()
 
+        print(names)
+        print(catalogue["names"])
+
         context = multiprocessing.get_context('fork')
         with context.Pool(processes=args.num_processors) as pool:
             arguments = zip(
