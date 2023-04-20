@@ -372,6 +372,8 @@ def main(args):
         print("Fitting profiles")
         t3_0 = time.time()
 
+        print(catalogue["name"])
+
         context = multiprocessing.get_context('fork')
         with context.Pool(processes=args.num_processors) as pool:
             arguments = zip(
@@ -381,7 +383,7 @@ def main(args):
             )
 
             print("Here")
-            test = fit_lines(names[0], ".txt", False)
+            test = fit_lines(catalogue["name"][0], ".txt", False)
             print(test)
             fit_results_list = pool.starmap(fit_lines, arguments)
             print("There")
