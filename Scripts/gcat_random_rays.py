@@ -404,7 +404,7 @@ def main(args):
             catalogue["b [km/s]"] = fit_results[:][1]
             catalogue["zfit"] = fit_results[:][2]
             print(catalogue)
-            catalogue.write(args.catalogue_file)
+            catalogue.write(args.catalogue_file, overwrite=True)
 
         t3_1 = time.time()
         print(f"INFO: Fits done. Elapsed time: {(t3_1-t3_0)/60.0} minutes")
