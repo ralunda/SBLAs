@@ -383,6 +383,7 @@ def main(args):
             fit_results = np.array(
                 [item for item in imap_it],
                 dtype=[("N [cm^-2]", float), ("b [km/s]", float), ("zfit", float)]
+            )
 
             print(fit_results[0])
             print(fit_results[:])
