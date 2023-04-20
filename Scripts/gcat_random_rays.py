@@ -379,7 +379,9 @@ def main(args):
                 repeat(".txt"),
             )
 
+            print("Here")
             fit_results_list = pool.starmap(fit_lines, arguments)
+            print("There")
 
             fit_results = np.array(
                 fit_results_list,
