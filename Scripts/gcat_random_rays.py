@@ -379,7 +379,8 @@ def main(args):
             arguments = zip(
                 catalogue["name"],
                 repeat(".h5"),
-                repeat(False)
+                repeat(False),
+                catalogue["noise"]
             )
 
             print("Here")

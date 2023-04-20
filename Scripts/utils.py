@@ -664,7 +664,7 @@ orderFits = ['FeII','CaX','ArVII','ArII','ArI','SXIV','SVI','SV','SIV','SIII','S
 
 
 
-def fit_lines(base_name, input_extension, save_fit):
+def fit_lines(base_name, input_extension, save_fit, noise):
     """Fit line profiles in the spectrum
 
     Arguments
@@ -678,6 +678,9 @@ def fit_lines(base_name, input_extension, save_fit):
 
     save_fit: bool
     Save the fit results in an h5 file called "{base_name}HIspecFIT.h5"
+
+    noise: float
+    Noise level in the spectra (-1 for no noise)
 
     Return
     ------
@@ -693,7 +696,10 @@ def fit_lines(base_name, input_extension, save_fit):
     print("I am the function you're looking for")
     # load arrays
     if input_extension == ".h5":
-        file = h5py.File(f"{base_name}spec.h5")
+        if noise > 0.:
+            file = h5py.File(f"{base_name}spec_nonoise.h5")
+        else:
+            file = h5py.File(f"{base_name}spec.h5")
         flux = file['flux'][:]
         wavelength = file["wavelength"][:]
         file.close()
