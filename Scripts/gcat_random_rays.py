@@ -363,14 +363,15 @@ def main(args):
     t2_1 = time.time()
     print(f"INFO: Run {len(snapshot_names)} skewers. Elapsed time: {(t2_1-t2_0)/60.0} minutes")
 
-    print("Fitting profiles")
-    t3_0 = time.time()
 
     ###########################
     # fit for NHI, b and z    #
     # (spectra without noise) #
     ###########################
     if args.fit:
+        print("Fitting profiles")
+        t3_0 = time.time()
+
         with context.Pool(processes=args.num_processors) as pool:
             arguments = zip(
                 names,
@@ -386,8 +387,8 @@ def main(args):
             catalogue["zfit"] = fit_results[:][2]
             catalogue.write(args.catalogue_file)
 
-    t3_1 = time.time()
-    print(f"INFO: Fits done. Elapsed time: {(t3_1-t3_0)/60.0} minutes")
+        t3_1 = time.time()
+        print(f"INFO: Fits done. Elapsed time: {(t3_1-t3_0)/60.0} minutes")
 
     t0_1 = time.time()
     print(f"INFO: total elapsed time: {(t0_1-t0_0)/60.0} minutes")
