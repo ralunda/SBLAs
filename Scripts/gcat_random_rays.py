@@ -378,7 +378,7 @@ def main(args):
         with context.Pool(processes=args.num_processors) as pool:
             arguments = zip(
                 catalogue["name"],
-                repeat(".txt"),
+                repeat(".h5"),
                 repeat(False)
             )
 
@@ -398,10 +398,13 @@ def main(args):
             print(fit_results_list[:])
             print(fit_results_list[:][0])
 
+            print(fit_results)
+
             # update catalogue
             catalogue["N [cm^-2]"] = fit_results[:][0]
             catalogue["b [km/s]"] = fit_results[:][1]
             catalogue["zfit"] = fit_results[:][2]
+            print(catalogue)
             catalogue.write(args.catalogue_file)
 
         t3_1 = time.time()
