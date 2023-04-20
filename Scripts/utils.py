@@ -696,7 +696,7 @@ def fit_lines(base_name, input_extension, save_fit, noise):
     print("I am the function you're looking for")
     # load arrays
     if input_extension == ".h5":
-        if noise > 0.:
+        if noise < 0.:
             file = h5py.File(f"{base_name}spec_nonoise.h5")
         else:
             file = h5py.File(f"{base_name}spec.h5")
