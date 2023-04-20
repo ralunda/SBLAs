@@ -381,7 +381,7 @@ def main(args):
             )
 
             print("Here")
-            test = fit_lines(*arguments[0])
+            test = fit_lines(names[0], ".txt", False)
             print(test)
             fit_results_list = pool.starmap(fit_lines, arguments)
             print("There")
