@@ -400,9 +400,9 @@ def main(args):
             print(fit_results)
 
             # update catalogue
-            catalogue["N [cm^-2]"] = fit_results[:][0]
-            catalogue["b [km/s]"] = fit_results[:][1]
-            catalogue["zfit"] = fit_results[:][2]
+            catalogue["N [cm^-2]"] = fit_results_list[:][0]
+            catalogue["b [km/s]"] = fit_results_list[:][1]
+            catalogue["zfit"] = fit_results_list[:][2]
             print(catalogue)
             catalogue.write(args.catalogue_file, overwrite=True)
 
