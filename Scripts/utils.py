@@ -6,6 +6,7 @@ from trident.absorption_spectrum.absorption_spectrum_fit import generate_total_f
 #from yt.mods import *
 import math
 import h5py
+from astropy.io import fits
 import numpy as np
 
 
