@@ -395,8 +395,8 @@ def main(args):
 
             # update catalogue
             catalogue["N [cm^-2]"] = fit_results["N [cm^-2]"]
-            catalogue["b [km/s]"] = fit_results["N [cm^-2]"]
-            catalogue["zfit"] = fit_results["N [cm^-2]"]
+            catalogue["b [km/s]"] = fit_results["b [km/s]"]
+            catalogue["zfit"] = fit_results["zfit"]
             catalogue.write(
                 f"{args.output_dir}/{args.catalogue_file}",
                 overwrite=True)
