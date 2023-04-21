@@ -322,6 +322,8 @@ def main(args):
             "snapshot_name": snapshot_names,
             "z": redshifts,
             "rho": rho,
+            "theta_e": theta_e,
+            "theta_r": theta_r,
             "start_shift_x": x_start,
             "start_shift_y": y_start,
             "start_shift_z": z_start,
