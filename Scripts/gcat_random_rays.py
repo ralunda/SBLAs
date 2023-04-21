@@ -383,26 +383,17 @@ def main(args):
                 catalogue["noise"]
             )
 
-            print("Here")
             fit_results_list = pool.starmap(fit_lines, arguments)
-            print("There")
-
+            
             fit_results = np.array(
                 fit_results_list,
                 dtype=[("N [cm^-2]", float), ("b [km/s]", float), ("zfit", float)]
             )
 
-            print(fit_results_list)
-            print(fit_results_list[0])
-            print(fit_results_list[:])
-            print(fit_results_list[:][0])
-
-            print(fit_results)
-
             # update catalogue
-            catalogue["N [cm^-2]"] = fit_results_list[:][0]
-            catalogue["b [km/s]"] = fit_results_list[:][1]
-            catalogue["zfit"] = fit_results_list[:][2]
+            catalogue["N [cm^-2]"] = fit_results["N [cm^-2]"]
+            catalogue["b [km/s]"] = fit_results["N [cm^-2]"]
+            catalogue["zfit"] = fit_results["N [cm^-2]"]
             print(catalogue)
             catalogue.write(args.catalogue_file, overwrite=True)
 

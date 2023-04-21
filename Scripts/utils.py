@@ -693,7 +693,6 @@ def fit_lines(base_name, input_extension, save_fit, noise):
     zfit: float
     The fitted redshift
     """
-    print("I am the function you're looking for")
     # load arrays
     if input_extension == ".h5":
         if noise < 0.:
