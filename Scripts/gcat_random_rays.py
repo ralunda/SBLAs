@@ -372,8 +372,6 @@ def main(args):
         print("Fitting profiles")
         t3_0 = time.time()
 
-        print(catalogue["name"])
-
         context = multiprocessing.get_context('fork')
         with context.Pool(processes=args.num_processors) as pool:
             arguments = zip(
@@ -394,9 +392,8 @@ def main(args):
             catalogue["N [cm^-2]"] = fit_results["N [cm^-2]"]
             catalogue["b [km/s]"] = fit_results["N [cm^-2]"]
             catalogue["zfit"] = fit_results["N [cm^-2]"]
-            print(catalogue)
             catalogue.write(
-                f"{args.output_dir}/{args.catalogue_file}", 
+                f"{args.output_dir}/{args.catalogue_file}",
                 overwrite=True)
 
         t3_1 = time.time()
