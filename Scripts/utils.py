@@ -697,17 +697,17 @@ def fit_lines(base_name, input_extension, save_fit, noise):
     # load arrays
     if input_extension == ".h5":
         if noise < 0.:
-            file = h5py.File(f"{base_name}spec_nonoise.h5")
+            file = h5py.File(f"{base_name}_spec_nonoise.h5")
         else:
-            file = h5py.File(f"{base_name}spec.h5")
+            file = h5py.File(f"{base_name}_spec.h5")
         flux = file['flux'][:]
         wavelength = file["wavelength"][:]
         file.close()
     elif input_extension in [".fits", ".fits.gz"]:
         if noise < 0.:
-            hdu = fits.open(f"{base_name}spec_nonoise{input_extension}")
+            hdu = fits.open(f"{base_name}_spec_nonoise{input_extension}")
         else:
-            hdu = fits.open(f"{base_name}spec{input_extension}")
+            hdu = fits.open(f"{base_name}_spec{input_extension}")
         flux = hdu[1].data["flux"]
         wavelength = hdu[1].data["wavelength"]
         hdu.close()
