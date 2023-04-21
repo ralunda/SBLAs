@@ -384,7 +384,7 @@ def main(args):
             )
 
             fit_results_list = pool.starmap(fit_lines, arguments)
-            
+
             fit_results = np.array(
                 fit_results_list,
                 dtype=[("N [cm^-2]", float), ("b [km/s]", float), ("zfit", float)]
@@ -395,7 +395,9 @@ def main(args):
             catalogue["b [km/s]"] = fit_results["N [cm^-2]"]
             catalogue["zfit"] = fit_results["N [cm^-2]"]
             print(catalogue)
-            catalogue.write(args.catalogue_file, overwrite=True)
+            catalogue.write(
+                f"{args.output_dir}/{args.catalogue_file}", 
+                overwrite=True)
 
         t3_1 = time.time()
         print(f"INFO: Fits done. Elapsed time: {(t3_1-t3_0)/60.0} minutes")
