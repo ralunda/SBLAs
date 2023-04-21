@@ -703,8 +703,13 @@ def fit_lines(base_name, input_extension, save_fit, noise):
         wavelength = file["wavelength"][:]
         file.close()
     elif input_extension in [".fits", ".fits.gz"]:
-        # TODO: read data from fits file
-        return 0, 0, 0
+        if noise < 0.:
+            hdu = fits.open(f"{base_name}spec_nonoise{input_extension}")
+        else:
+            hdu = fits.open(f"{base_name}spec{input_extension}")
+        flux = hdu[1].data["flux"]
+        wavelength = hdu[1].data["wavelength"]
+        hdu.close()
     elif input_extension == ".txt":
         # TODO: read data from txt file
         return 0, 0, 0
