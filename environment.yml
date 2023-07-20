@@ -43,6 +43,7 @@ dependencies:
     - fonttools==4.38.0
     - h5py==3.8.0
     - idna==3.4
+    - iminuit==2.22.0
     - ipykernel==6.20.2
     - ipython==8.9.0
     - ipywidgets==8.0.4
