@@ -391,10 +391,13 @@ def fit_lines(base_name, input_extension, noise, start_z, start_b,
         # fit is now worse, report and skip line
         elif minimizer.valid:
             print(
-                f"Fit on species {species} worsens the chi2. Previous chi2 = {current_chi2}."
+                f"For spectrum {base_name}, fit on species {species} worsens "
+                f"the chi2. Previous chi2 = {current_chi2}."
                 f"New chi2 = {minimizer.fval}. Ignoring line")
         # fit did not converge, report and skip line
         else:
-            print(f"Fit on species {species} failed. Ignoring")
+            print(
+                f"For spectrum {base_name}, fit on species {species} failed. "
+                "Ignoring")
 
     return all_species_lines, flux_fit
