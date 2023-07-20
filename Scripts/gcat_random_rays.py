@@ -8,14 +8,14 @@ from itertools import repeat
 import multiprocessing
 import numpy as np
 from scipy.interpolate import interp1d
-from astropy.table import Table
+from astropy.table import Table, hstack
 import time
 
 from yt.utilities.logger import set_log_level as set_log_level_yt
 from yt.config import ytcfg
 
+from fit_lines import fit_lines
 from utils import (
-    fit_lines,
     load_snapshot,
     run_galaxy_snapshot,
     run_simple_ray,
@@ -384,21 +384,21 @@ def main(args):
             arguments = zip(
                 names,
                 repeat(".fits.gz"),
-                repeat(False),
-                catalogue["noise"]
+                catalogue["noise"],
+                catalogue["z"],
+                catalogue["rho"],
             )
 
             fit_results_list = pool.starmap(fit_lines, arguments)
 
-            fit_results = np.array(
-                fit_results_list,
-                dtype=[("N [cm^-2]", float), ("b [km/s]", float), ("zfit", float)]
-            )
-
             # update catalogue
-            catalogue["N [cm^-2]"] = fit_results["N [cm^-2]"]
-            catalogue["b [km/s]"] = fit_results["b [km/s]"]
-            catalogue["zfit"] = fit_results["zfit"]
+            fit_results = Table([
+                item[0] for item in fit_results_list
+            ])
+            catalogue = hstack([catalogue, fit_results])
+            print(catalogue)
+
+            # save catalogue
             catalogue.write(
                 f"{args.output_dir}/{args.catalogue_file}",
                 overwrite=True)
