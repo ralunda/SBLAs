@@ -392,12 +392,11 @@ def main(args):
             fit_results_list = pool.starmap(fit_lines, arguments)
 
             # update catalogue
-            fit_results = Table([
+            fit_results = Table(np.concatenate([
                 item[0] for item in fit_results_list
-            ])
+            ]))
             catalogue = hstack([catalogue, fit_results])
-            print(catalogue)
-
+            
             # save catalogue
             catalogue.write(
                 f"{args.output_dir}/{args.catalogue_file}",

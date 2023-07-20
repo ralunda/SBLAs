@@ -298,7 +298,7 @@ def fit_lines(base_name, input_extension, noise, start_z, start_b,
             (f"{species} b [km/s]", float),
             (f"{species} zfit", float)
         ]
-    all_species_lines = np.array([[np.nan]*len(order_fits)*3], dtype=dtype)
+    all_species_lines = np.array([np.nan], dtype=dtype)
 
     # load arrays
     if input_extension == ".h5":
@@ -341,7 +341,6 @@ def fit_lines(base_name, input_extension, noise, start_z, start_b,
         species["init_b"] = start_b
 
     # initialze fit results
-    all_species_lines = {}
     flux_fit = np.ones_like(flux)
     current_chi2 = np.sum((flux_fit - flux)**2)
 
