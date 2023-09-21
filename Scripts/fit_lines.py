@@ -62,11 +62,6 @@ SPECIES_DICTS = {
         'Gamma':[1.350000E+06, 1.520000E+06],
         'wavelength':[1239.925300, 1240.394700],
     },
-    'CIII': {
-        'f': [7.586000E-01],
-        'Gamma':[1.767000E+09],
-        'wavelength':[977.0200],
-    },
     'OVI': {
         'f': [1.330000E-01, 6.600000E-02],
         'Gamma':[4.160000E+08, 4.090000E+08],
@@ -76,11 +71,6 @@ SPECIES_DICTS = {
         'f': [2.550000E-01],
         'Gamma':[8.630000E+08],
         'wavelength':[1402.770000],
-    },
-    'SiIII': {
-        'f': [1.630000E+00],
-        'Gamma':[2.480000E+09],
-        'wavelength':[1206.500000],
     },
     'NeVIII': {
         'f': [1.020000E-01, 5.020000E-02],
@@ -99,8 +89,7 @@ for species_dict in SPECIES_DICTS.values():
     species_dict["init_N"] = START_NHI
 
 ORDER_FITS = [
-    "Lya", "Lyb", "CIV", "MgII", "CIII", "OVI", "SiIV", "SiIII",
-    "NeVIII", "Lyg", "Lyx"
+    "Lya", "Lyb", "CIV", "MgII", "OVI", "SiIV", "NeVIII", "Lyg", "Lyx"
 ]
 
 Z_MIN_FACTOR = 0.9
