@@ -26,7 +26,7 @@ SPECIES_DICTS = {
         'Gamma':[1.280E6],
         'wavelength':[972.5367],
     },
-    'Lyx': { # Lyman series (excluding Lya, Lyb and Lyg)
+    'Lyother': { # Lyman series (excluding Lya, Lyb and Lyg)
         'f': [
             2.440e-05, 2.640e-05, 2.850e-05, 3.090e-05, 3.350e-05, 3.650e-05, 3.980e-05,
             4.360e-05, 4.780e-05, 5.260e-05, 5.800e-05, 6.430e-05, 7.140e-05, 7.970e-05,
@@ -89,7 +89,7 @@ for species_dict in SPECIES_DICTS.values():
     species_dict["init_N"] = START_NHI
 
 ORDER_FITS = [
-    "Lya", "Lyb", "CIV", "MgII", "OVI", "SiIV", "NeVIII", "Lyg", "Lyx"
+    "Lya", "Lyb", "CIV", "MgII", "OVI", "SiIV", "NeVIII", "Lyg", "Lyother"
 ]
 
 Z_MIN_FACTOR = 0.9
