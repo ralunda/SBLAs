@@ -7,6 +7,7 @@ from astropy.io import fits
 import h5py
 
 from trident.absorption_spectrum.absorption_line import voigt
+# from trident.absorption_spectrum.absorption_spectrum_fit import generate_total_fit?
 
 SPEED_LIGHT = speed_of_light / 1000.0 # km/s
 
@@ -14,17 +15,17 @@ SPECIES_DICTS = {
     'Lya': {
         'f': [.4160],
         'Gamma':[4.690E8],
-        'wavelength':[1215.67],
+        'wavelength':[1215.67]
     },
     'Lyb': {
         'f': [.0791],
         'Gamma':[5.570E7],
-        'wavelength':[1025.7222],
+        'wavelength':[1025.7222]
     },
     'Lyg': {
         'f': [.0290],
         'Gamma':[1.280E6],
-        'wavelength':[972.5367],
+        'wavelength':[972.5367]
     },
     'Lyother': { # Lyman series (excluding Lya, Lyb and Lyg)
         'f': [
@@ -33,7 +34,7 @@ SPECIES_DICTS = {
             8.920e-05, 1.000e-04, 1.140e-04, 1.290e-04, 1.480e-04, 1.700e-04, 1.970e-04,
             2.290e-04, 2.700e-04, 3.210e-04, 3.850e-04, 4.680e-04, 5.770e-04, 7.220e-04,
             9.210e-04, 1.200e-03, 1.600e-03, 2.210e-03, 3.180e-03, 4.810e-03, 7.790e-03,
-            1.390e-02,
+            1.390e-02
         ],
         'Gamma': [
             1.220e+02, 1.390e+02, 1.580e+02, 1.810e+02, 2.070e+02, 2.390e+02, 2.760e+02,
@@ -52,45 +53,45 @@ SPECIES_DICTS = {
             949.7429
         ]
     },
-    'CIV': {
-        'f': [1.900000E-01, 9.520000E-02],
-        'Gamma':[2.650000E+08, 2.640000E+08],
-        'wavelength':[1548.1870, 1550.7720],
+    'CIII': {
+        'f': [7.586E-01],
+        'Gamma':[1.767E+09],
+        'wavelength':[977.0200]
     },
-    'MgII': {
-        'f': [6.210000E-04, 3.510000E-04],
-        'Gamma':[1.350000E+06, 1.520000E+06],
-        'wavelength':[1239.925300, 1240.394700],
+    'NIV': {
+        'f': [6.109E-01],
+        'Gamma':[2.320E+09],
+        'wavelength':[765.1470]
+    },
+    'NV': {
+        'f': [1.560E-01, 7.800E-02],
+        'Gamma':[3.400E+08, 3.370E+08],
+        'wavelength':[1238.8210, 1242.8040]
+    },
+    'OIII': {
+        'f': [1.340E-01, 4.520E-02, 1.060E-01, 8.770E-02, 8.770E-02],
+        'Gamma':[6.060E+08, 1.830E+09, 3.410E+08, 5.990E+08, 5.990E+08],
+        'wavelength':[702.3370, 702.8380, 832.9290, 835.2890, 835.2890]
     },
     'OVI': {
-        'f': [1.330000E-01, 6.600000E-02],
-        'Gamma':[4.160000E+08, 4.090000E+08],
-        'wavelength':[1031.912000, 1037.613000],
-    },
-    'SiIV': {
-        'f': [2.550000E-01],
-        'Gamma':[8.630000E+08],
-        'wavelength':[1402.770000],
-    },
-    'NeVIII': {
-        'f': [1.020000E-01, 5.020000E-02],
-        'Gamma':[5.720000E+08, 5.500000E+08],
-        'wavelength':[770.409000, 780.324000],
+        'f': [1.330E-01, 6.600E-02],
+        'Gamma':[4.160E+08, 4.090E+08],
+        'wavelength':[1031.9120, 1037.6130]
     },
 }
 
 MIN_NHI = 1e5
 MAX_NHI = 1e24
 START_NHI = 1e12
+# check values start_NHI, max_NHI and min_NHI
+# maxminN or maxmin_N?
 
 for species_dict in SPECIES_DICTS.values():
     species_dict["max_N"] = MAX_NHI
     species_dict["min_N"] = MIN_NHI
     species_dict["init_N"] = START_NHI
 
-ORDER_FITS = [
-    "Lya", "Lyb", "CIV", "MgII", "OVI", "SiIV", "NeVIII", "Lyg", "Lyother"
-]
+ORDER_FITS = ["Lya", "Lyb", "CIII", "NIV", "NV", "OIII", "OVI", "Lyg", "Lyother"]
 
 Z_MIN_FACTOR = 0.9
 Z_MAX_FACTOR = 1.1
@@ -328,6 +329,8 @@ def fit_lines(base_name, input_extension, noise, start_z, start_b,
         species["max_b"] = max_b
         species["min_b"] = min_b
         species["init_b"] = start_b
+    # maxminb, maxminN, maxminz or maxmin_b, maxmin_N, maxminz?
+    # why use init_z?
 
     # initialze fit results
     flux_fit = np.ones_like(flux)
